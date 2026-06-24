@@ -4,6 +4,7 @@ import base64
 from PIL import Image
 import io
 from openai import OpenAI
+import json
 
 client = OpenAI(
     api_key=st.secrets["OPENAI_API_KEY"]
@@ -235,12 +236,26 @@ if uploaded_file is not None:
                 )
 
                 page_result = response.choices[0].message.content
-                operational_model.append(
-                    {
-                        "page": page_num + 1,
-                        "finding": page_result
-                    }
-                )
+
+                try:
+
+                    page_json = json.loads(page_result)
+
+                    operational_model.append(
+                        {
+                            "page": page_num + 1,
+                            "kpis": page_json.get("kpis", [])
+                        }
+                    )
+
+                except Exception as e:
+
+                    operational_model.append(
+                        {
+                            "page": page_num + 1,
+                            "error": str(e)
+                        }
+                    )
 
                 report_summary += f"\n\nPAGE {page_num+1}\n"
                 report_summary += page_result
