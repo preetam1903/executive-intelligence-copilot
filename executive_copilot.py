@@ -49,11 +49,51 @@ if uploaded_file is not None:
             img
         ).decode("utf-8")
 
-        st.success("Image Ready For Vision Analysis")
+        with st.spinner("Analyzing page..."):
 
-        st.write(
-            f"Image Size: {len(base64_image)} characters"
-        )
+            response = client.chat.completions.create(
+                model="gpt-4.1",
+
+                messages=[
+                    {
+                        "role": "user",
+                        "content": [
+
+                            {
+                                "type": "text",
+                                "text": """
+    Analyze this manufacturing report page.
+
+    Extract:
+
+    1. Page title
+    2. Chart titles
+    3. KPI names
+    4. Trend direction
+
+    Return a concise summary.
+    """
+                            },
+
+                            {
+                                "type": "image_url",
+                                "image_url": {
+                                    "url": f"data:image/png;base64,{base64_image}"
+                                }
+                            }
+
+                        ]
+                    }
+                ],
+
+                temperature=0
+            )
+
+            result = response.choices[0].message.content
+
+            st.subheader("Vision Analysis")
+
+            st.write(result)
 
     
 
