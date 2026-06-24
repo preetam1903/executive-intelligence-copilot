@@ -227,43 +227,45 @@ if uploaded_file is not None:
             height=500
         )
     
-    if st.button("Generate Executive Summary"):
+    if "report_summary" in st.session_state:
 
-        with st.spinner("Generating Executive Summary..."):
+        if st.button("Generate Executive Summary"):
 
-            summary_response = client.chat.completions.create(
-                model="gpt-4.1",
+            with st.spinner("Generating Executive Summary..."):
 
-                messages=[
-                    {
-                        "role": "user",
-                        "content": f"""
-    You are a COO advisor.
+                summary_response = client.chat.completions.create(
+                    model="gpt-4.1",
 
-    Using the findings below:
+                    messages=[
+                        {
+                            "role": "user",
+                            "content": f"""
+        You are a COO advisor.
 
-    {report_summary}
+        Using the findings below:
 
-    Provide:
+        {st.session_state['report_summary']}
 
-    1. Executive Summary
-    2. Top Risks
-    3. Critical Areas
-    4. Watch Items
+        Provide:
 
-    Keep it concise.
-    """
-                    }
-                ],
+        1. Executive Summary
+        2. Top Risks
+        3. Critical Areas
+        4. Watch Items
+    
+        Keep it concise.
+        """
+                        }
+                    ],
 
-                temperature=0
-            )
+                    temperature=0
+                )
 
-            st.subheader("Executive Summary")
+                st.subheader("Executive Summary")
 
-            st.write(
-                summary_response.choices[0].message.content
-            )
+                st.write(
+                    summary_response.choices[0].message.content
+                )
 
 
     
