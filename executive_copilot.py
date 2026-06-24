@@ -156,7 +156,7 @@ if uploaded_file is not None:
             st.write(result)
 
     if st.button("Analyze Entire Report"):
-
+        operational_model = []
         report_summary = ""
 
         with st.spinner("Analyzing report..."):
@@ -213,6 +213,12 @@ if uploaded_file is not None:
                 )
 
                 page_result = response.choices[0].message.content
+                operational_model.append(
+                    {
+                        "page": page_num + 1,
+                        "finding": page_result
+                    }
+                )
 
                 report_summary += f"\n\nPAGE {page_num+1}\n"
                 report_summary += page_result
