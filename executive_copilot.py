@@ -1,5 +1,6 @@
 import streamlit as st
 import fitz
+import base64
 from openai import OpenAI
 
 client = OpenAI(
@@ -43,7 +44,18 @@ if uploaded_file is not None:
         caption=f"Page {page_no + 1}"
     )
     if st.button("Analyze Page"):
-        st.write("Vision Analysis Coming Soon")
+
+        base64_image = base64.b64encode(
+            img
+        ).decode("utf-8")
+
+        st.success("Image Ready For Vision Analysis")
+
+        st.write(
+            f"Image Size: {len(base64_image)} characters"
+        )
+
+    
 
     st.subheader("Extracted Text")
 
