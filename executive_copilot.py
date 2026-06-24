@@ -196,18 +196,31 @@ if uploaded_file is not None:
     Return ONLY valid JSON.
 
     {
-      "kpis":[
-        {
-          "name":"",
-          "actual":"",
-          "target":"",
-          "status":"",
-          "trend":"",
-          "risk":"",
-          "business_impact":""
-        }
-      ]
+  "kpis":[
+    {
+      "name":"",
+
+      "weekly_values": {
+        "W1":"",
+        "W2":"",
+        "W3":"",
+        "W4":""
+      },
+
+      "target_values": {
+        "W1":"",
+        "W2":"",
+        "W3":"",
+        "W4":""
+      },
+
+      "status":"",
+      "trend":"",
+      "risk":"",
+      "business_impact":""
     }
+  ]
+}
 
     Rules:
     - Extract KPI name.
