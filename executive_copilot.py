@@ -192,14 +192,32 @@ if uploaded_file is not None:
                                     "text":"""
     Analyze this manufacturing report page.
 
-    Identify:
+    Return ONLY valid JSON.
 
-    - KPIs
-    - Charts
-    - Trends
-    - Risks
+    {
+      "kpis":[
+        {
+          "name":"",
+          "actual":"",
+          "target":"",
+          "status":"",
+          "trend":"",
+          "risk":"",
+          "business_impact":""
+        }
+      ]
+    }
 
-    Return concise bullet points.
+    Rules:
+    - Extract KPI name.
+    - Extract actual value if visible.
+    - Extract target value if visible.
+    - Extract status (RED/AMBER/GREEN if visible).
+    - Trend = Up/Down/Stable.
+    - Risk = Low/Medium/High.
+    - Return JSON only.
+    - No markdown.
+    - No explanation.
     """
                                 },
 
