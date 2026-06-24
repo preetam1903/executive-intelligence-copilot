@@ -1,6 +1,8 @@
 import streamlit as st
 import fitz
 import base64
+from PIL import Image
+import io
 from openai import OpenAI
 
 client = OpenAI(
@@ -43,6 +45,18 @@ if uploaded_file is not None:
         img,
         caption=f"Page {page_no + 1}"
     )
+    if st.button("Segment Page"):
+
+        image = Image.open(
+            io.BytesIO(img)
+        )
+
+        st.write(
+            f"Image Size: {image.width} x {image.height}"
+        )
+
+
+    
     if st.button("Analyze Page"):
 
         base64_image = base64.b64encode(
