@@ -117,21 +117,25 @@ if uploaded_file is not None:
                                 "text": """
     Analyze this manufacturing report page.
 
-    Identify every KPI, chart or metric.
+    Return JSON ONLY.
 
-    For each one provide:
+    {
+      "kpis":[
+        {
+          "name":"",
+          "trend":"",
+          "risk":"",
+          "business_impact":""
+        }
+      ]
+    }
 
-    - KPI Name
-    - Trend (Increasing/Decreasing/Stable)
-    - Business Impact
-    - Risk Level (Low/Medium/High)
-
-    At the end provide:
-
-    Most Critical KPI:
-    Reason:
-
-    Return concise bullet points.
+    Rules:
+    - Extract every KPI you can identify.
+    - Trend must be Up, Down or Stable.
+    - Risk must be Low, Medium or High.
+    - business_impact should be short.
+    - Return valid JSON only.
     """
                             },
 
@@ -224,6 +228,7 @@ if uploaded_file is not None:
                 report_summary += page_result
 
         st.session_state["report_summary"] = report_summary
+        st.session_state["operational_model"] = operational_model
 
         st.success("Report Analysis Complete")
 
@@ -232,6 +237,9 @@ if uploaded_file is not None:
             report_summary,
             height=500
         )
+
+        st.subheader("Operational Knowledge Model")
+        st.write(operational_model)
     
     if "report_summary" in st.session_state:
 
