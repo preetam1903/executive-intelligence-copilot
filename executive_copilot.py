@@ -64,14 +64,21 @@ if uploaded_file is not None:
                                 "text": """
     Analyze this manufacturing report page.
 
-    Extract:
+    Identify every KPI, chart or metric.
 
-    1. Page title
-    2. Chart titles
-    3. KPI names
-    4. Trend direction
+    For each one provide:
 
-    Return a concise summary.
+    - KPI Name
+    - Trend (Increasing/Decreasing/Stable)
+    - Business Impact
+    - Risk Level (Low/Medium/High)
+
+    At the end provide:
+
+    Most Critical KPI:
+    Reason:
+
+    Return concise bullet points.
     """
                             },
 
