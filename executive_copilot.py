@@ -55,6 +55,45 @@ if uploaded_file is not None:
             f"Image Size: {image.width} x {image.height}"
         )
 
+        cols = 4
+        rows = 4
+
+        segment_width = image.width // cols
+        segment_height = image.height // rows
+
+        st.subheader("Page Segments")
+
+        segment_no = 1
+
+        for row in range(rows):
+
+            display_cols = st.columns(cols)
+
+            for col in range(cols):
+
+                left = col * segment_width
+                top = row * segment_height
+
+                right = left + segment_width
+                bottom = top + segment_height
+
+                segment = image.crop(
+                    (left, top, right, bottom)
+                )
+
+                with display_cols[col]:
+
+                    st.write(
+                        f"Segment {segment_no}"
+                    )
+
+                    st.image(segment)
+
+                segment_no += 1
+
+
+        
+
 
     
     if st.button("Analyze Page"):
