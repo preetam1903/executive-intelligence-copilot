@@ -224,8 +224,10 @@ if uploaded_file is not None:
 
     Rules:
     - Extract KPI name.
-    - Extract actual value if visible.
-    - Extract target value if visible.
+    - Extract all visible weekly values (W1, W2, W3, W4).
+    - Extract all visible target values (W1, W2, W3, W4) if a target line, target bars, or target table is present.
+    - If no target values are visible, leave the target values empty. Never guess target values.
+    - Do not return only the latest week's value.
     - Extract status (RED/AMBER/GREEN if visible).
     - Trend = Up/Down/Stable.
     - Risk = Low/Medium/High.
