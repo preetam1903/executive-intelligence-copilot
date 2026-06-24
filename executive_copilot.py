@@ -1,6 +1,10 @@
 import streamlit as st
 import fitz
+from openai import OpenAI
 
+client = OpenAI(
+    api_key=st.secrets["OPENAI_API_KEY"]
+)
 st.set_page_config(layout="wide")
 
 st.title("Executive Intelligence Copilot")
@@ -38,6 +42,8 @@ if uploaded_file is not None:
         img,
         caption=f"Page {page_no + 1}"
     )
+    if st.button("Analyze Page"):
+        st.write("Vision Analysis Coming Soon")
 
     st.subheader("Extracted Text")
 
