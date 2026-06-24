@@ -1,27 +1,46 @@
-import fitz
 import streamlit as st
+import fitz
 
-pdf = fitz.open(
-    stream=uploaded_file.read(),
-    filetype="pdf"
+st.set_page_config(layout="wide")
+
+st.title("Executive Intelligence Copilot")
+
+uploaded_file = st.file_uploader(
+    "Upload PDF Report",
+    type=["pdf"]
 )
 
-page_no = st.selectbox(
-    "Select Page",
-    range(pdf.page_count)
-)
+if uploaded_file is not None:
 
-page = pdf.load_page(page_no)
+    pdf = fitz.open(
+        stream=uploaded_file.read(),
+        filetype="pdf"
+    )
 
-pix = page.get_pixmap(
-    matrix=fitz.Matrix(2, 2)
-)
+    st.success(
+        f"PDF Loaded Successfully - {pdf.page_count} Pages"
+    )
 
-img = pix.tobytes("png")
+    page_no = st.selectbox(
+        "Select Page",
+        range(pdf.page_count)
+    )
 
-st.image(
-    img,
-    caption=f"Page {page_no + 1}"
-)
+    page = pdf.load_page(page_no)
 
-st.text(page.get_text())
+    pix = page.get_pixmap(
+        matrix=fitz.Matrix(2, 2)
+    )
+
+    img = pix.tobytes("png")
+
+    st.image(
+        img,
+        caption=f"Page {page_no + 1}"
+    )
+
+    st.subheader("Extracted Text")
+
+    st.text(
+        page.get_text()
+    )
