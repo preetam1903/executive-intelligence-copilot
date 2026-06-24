@@ -155,8 +155,118 @@ if uploaded_file is not None:
 
             st.write(result)
 
-    
+    if st.button("Analyze Entire Report"):
 
+        report_summary = ""
+
+        with st.spinner("Analyzing report..."):
+
+            for page_num in range(pdf.page_count):
+
+                page = pdf.load_page(page_num)
+
+                pix = page.get_pixmap(
+                    matrix=fitz.Matrix(2,2)
+                )
+
+                page_img = pix.tobytes("png")
+
+                base64_image = base64.b64encode(
+                    page_img
+                ).decode("utf-8")
+
+                response = client.chat.completions.create(
+                    model="gpt-4.1",
+
+                    messages=[
+                        {
+                            "role":"user",
+                            "content":[
+
+                                {
+                                    "type":"text",
+                                    "text":"""
+    Analyze this manufacturing report page.
+
+    Identify:
+
+    - KPIs
+    - Charts
+    - Trends
+    - Risks
+
+    Return concise bullet points.
+    """
+                                },
+
+                                {
+                                    "type":"image_url",
+                                    "image_url":{
+                                        "url":f"data:image/png;base64,{base64_image}"
+                                    }
+                                }
+                            ]
+                        }
+                    ],
+
+                    temperature=0
+                )
+
+                page_result = response.choices[0].message.content
+
+                report_summary += f"\n\nPAGE {page_num+1}\n"
+                report_summary += page_result
+
+        st.session_state["report_summary"] = report_summary
+
+        st.success("Report Analysis Complete")
+
+        st.text_area(
+            "Page Analysis",
+            report_summary,
+            height=500
+        )
+    
+    if st.button("Generate Executive Summary"):
+
+        with st.spinner("Generating Executive Summary..."):
+
+            summary_response = client.chat.completions.create(
+                model="gpt-4.1",
+
+                messages=[
+                    {
+                        "role": "user",
+                        "content": f"""
+    You are a COO advisor.
+
+    Using the findings below:
+
+    {report_summary}
+
+    Provide:
+
+    1. Executive Summary
+    2. Top Risks
+    3. Critical Areas
+    4. Watch Items
+
+    Keep it concise.
+    """
+                    }
+                ],
+
+                temperature=0
+            )
+
+            st.subheader("Executive Summary")
+
+            st.write(
+                summary_response.choices[0].message.content
+            )
+
+
+    
     st.subheader("Extracted Text")
 
     st.text(
