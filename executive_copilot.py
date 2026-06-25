@@ -90,33 +90,43 @@ if uploaded_file is not None:
 
     with left:
 
-        page_number = st.slider(
+        if pdf.page_count > 0:
 
-            "Page",
+            page_number = st.slider(
 
-            1,
+                "Page",
 
-            pdf.page_count,
+                min_value=1,
 
-            1
+                max_value=pdf.page_count,
 
-        )
+                value=1
 
-        page = pdf.load_page(page_number - 1)
+            )
 
-        pix = page.get_pixmap(
+            page = pdf.load_page(page_number - 1)
 
-            matrix=fitz.Matrix(2, 2)
+            pix = page.get_pixmap(
 
-        )
+                matrix=fitz.Matrix(2, 2)
 
-        st.image(
+            )
 
-            pix.tobytes("png"),
+            st.image(
 
-            use_container_width=True
+                pix.tobytes("png"),
 
-        )
+                use_container_width=True
+
+            )
+
+        else:
+
+            st.error(
+
+                "This PDF contains no pages or could not be read."
+
+            )
 
     with right:
 
