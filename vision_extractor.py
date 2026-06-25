@@ -62,19 +62,34 @@ Return ONLY valid JSON.
 
 Do not explain anything.
 
-For this page identify:
+Your PRIMARY objective is to extract structured business intelligence from EVERY chart on this page.
 
-1. KPIs
-2. Charts
-3. Tables
-4. Commentary
-5. Risks
-6. Actions
-7. Scatter Plots
-8. Images
-9. Any Business Areas
-10. Any Units
-11. Unknown concepts
+For EVERY chart extract:
+
+1. Chart Title
+2. Chart Type
+3. Business Area
+4. X Axis Title
+5. X Axis Labels
+6. Y Axis Title
+7. Y Axis Unit
+8. Legend
+9. Every Data Series
+10. Every Visible Numerical Value
+11. Target Line
+12. Threshold Line
+13. Trend
+14. Commentary
+
+After ALL charts are processed, extract:
+
+- Tables
+- KPI Cards
+- Risks
+- Actions
+- Images
+- Business Areas
+- Units
 
 Return JSON in this exact format.
 
