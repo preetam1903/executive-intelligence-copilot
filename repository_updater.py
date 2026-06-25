@@ -514,102 +514,117 @@ class RepositoryUpdater:
         # ----------------------------------------------------
     # Discovery Queue
     # ----------------------------------------------------
+        # ----------------------------------------------------
+    # Discovery Queue
+    # ----------------------------------------------------
 
     def save_discovery(
             self,
             executive_object):
 
-        title = self.safe_string(
-            executive_object.title
-        )
+        try:
 
-        if title == "":
-            return
+            title = self.safe_string(
+                executive_object.title
+            )
 
-        self.repository.cursor.execute(
+            if title == "":
+                return
 
-            """
-            SELECT id
+            self.repository.cursor.execute(
 
-            FROM discovery_queue
+                """
+                SELECT discovery_id
 
-            WHERE lower(title)=?
+                FROM discovery_queue
 
-            """,
+                WHERE lower(title)=?
 
-            (
+                """,
 
-                self.safe_lower(title),
+                (
+
+                    self.safe_lower(title),
+
+                )
 
             )
 
-        )
+            row = self.repository.cursor.fetchone()
 
-        if self.repository.cursor.fetchone():
+            if row:
+                return
 
-            return
+            self.repository.cursor.execute(
 
-        self.repository.cursor.execute(
+                """
+                INSERT INTO discovery_queue
+                (
 
-            """
-            INSERT INTO discovery_queue
-            (
+                    title,
 
-                title,
+                    object_type,
 
-                object_type,
+                    suggested_business_area,
 
-                suggested_business_area,
+                    report_name,
 
-                report_name,
+                    page,
 
-                page,
+                    confidence,
 
-                confidence,
+                    status
 
-                status
+                )
 
-            )
+                VALUES
+                (
+                    ?,?,?,?,?,?,?
+                )
 
-            VALUES
+                """,
 
-            (
+                (
 
-                ?,?,?,?,?,?,?
+                    self.safe_string(
+                        executive_object.title
+                    ),
 
-            )
+                    self.safe_string(
+                        executive_object.object_type
+                    ),
 
-            """,
+                    self.safe_string(
+                        executive_object.business_area
+                    ),
 
-            (
+                    self.safe_string(
+                        executive_object.report_name
+                    ),
 
-                self.safe_string(
-                    executive_object.title
-                ),
+                    executive_object.page,
 
-                self.safe_string(
-                    executive_object.object_type
-                ),
+                    1.0,
 
-                self.safe_string(
-                    executive_object.business_area
-                ),
+                    "Pending"
 
-                self.safe_string(
-                    executive_object.report_name
-                ),
-
-                executive_object.page,
-
-                1.0,
-
-                "Pending"
+                )
 
             )
 
-        )
+            self.repository.connection.commit()
 
-        self.repository.connection.commit()
+        except Exception as ex:
+
+            print("=" * 80)
+            print("SAVE DISCOVERY ERROR")
+            print(type(ex))
+            print(ex)
+            print("=" * 80)
+
+            raise
+    
+            
 
     # ----------------------------------------------------
     # Repository Statistics
