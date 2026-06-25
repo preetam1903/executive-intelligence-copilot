@@ -152,35 +152,26 @@ class RepositoryUpdater:
         # ----------------------------------------------------
     # Save Executive Object
     # ----------------------------------------------------
-
     def save_executive_object(
-            self,
-            executive_object):
+        self,
+        executive_object):
 
-        exists, object_id = self.executive_object_exists(
+    exists, object_id = self.executive_object_exists(
+        executive_object
+    )
+
+    if exists:
+
+        self.update_existing_object(
+            object_id,
             executive_object
         )
 
-        # ------------------------------------------------
-        # Existing Object
-        # ------------------------------------------------
+        return object_id
 
-        if exists:
+    try:
 
-            self.update_existing_object(
-                object_id,
-                executive_object
-            )
-
-            return object_id
-
-        # ------------------------------------------------
-        # New Object
-        # ------------------------------------------------
-
-        try:
-
-            self.repository.cursor.execute(
+        self.repository.cursor.execute(
 
             """
             INSERT INTO executive_objects
@@ -212,73 +203,51 @@ class RepositoryUpdater:
 
                 executive_object.object_id,
 
-                self.safe_string(
-                    executive_object.object_type
-                ),
+                self.safe_string(executive_object.object_type),
 
-                self.safe_string(
-                    executive_object.title
-                ),
+                self.safe_string(executive_object.title),
 
-                self.safe_string(
-                    executive_object.plant
-                ),
+                self.safe_string(executive_object.plant),
 
-                self.safe_string(
-                    executive_object.unit
-                ),
+                self.safe_string(executive_object.unit),
 
-                self.safe_string(
-                    executive_object.business_area
-                ),
+                self.safe_string(executive_object.business_area),
 
-                self.safe_string(
-                    executive_object.report_name
-                ),
+                self.safe_string(executive_object.report_name),
 
                 executive_object.page,
 
-                self.safe_string(
-                    executive_object.time_period
-                ),
+                self.safe_string(executive_object.time_period),
 
-                json.dumps(
-                    executive_object.commentary
-                ),
+                json.dumps(executive_object.commentary),
 
-                json.dumps(
-                    executive_object.insights
-                ),
+                json.dumps(executive_object.insights),
 
-                json.dumps(
-                    executive_object.evidence
-                ),
+                json.dumps(executive_object.evidence),
 
-                json.dumps(
-                    executive_object.domain_intelligence
-                ),
+                json.dumps(executive_object.domain_intelligence),
 
-                json.dumps(
-                    executive_object.metadata
-                ),
+                json.dumps(executive_object.metadata),
 
                 datetime.now().isoformat()
 
             )
 
         )
-        except Exception as ex:
 
-            print("=" * 80)
-            print("SAVE EXECUTIVE OBJECT ERROR")
-            print(type(ex))
-            print(ex)
-            print("=" * 80)
-        
-    raise
         self.repository.connection.commit()
 
         return executive_object.object_id
+
+    except Exception as ex:
+
+        print("=" * 80)
+        print("SAVE EXECUTIVE OBJECT ERROR")
+        print(type(ex))
+        print(ex)
+        print("=" * 80)
+
+        raise
 
     # ----------------------------------------------------
     # Update Existing Executive Object
