@@ -108,6 +108,7 @@ if uploaded_file is not None:
 # ----------------------------------------------------
 # Build Knowledge Repository
 # ----------------------------------------------------
+
 if uploaded_file is not None:
 
     if st.button(
@@ -116,29 +117,29 @@ if uploaded_file is not None:
 
     ):
 
-
-
-    with st.spinner(
-
-        "Analyzing report..."
-
-    ):
         uploaded_file.seek(0)
-        result = agent.process_report(
 
-            uploaded_file
+        with st.spinner(
 
-        )
+            "Analyzing report..."
 
-        st.session_state["analysis_complete"] = True
+        ):
 
-        st.success(
+            result = agent.process_report(
 
-            "Knowledge Repository Updated"
+                uploaded_file
 
-        )
+            )
 
-        st.write(result)
+            st.session_state["analysis_complete"] = True
+
+            st.success(
+
+                "Knowledge Repository Updated"
+
+            )
+
+            st.write(result)
 
 # ----------------------------------------------------
 # Executive Repository Dashboard
