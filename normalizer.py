@@ -156,7 +156,10 @@ class Normalizer:
                            observation_json,
                            report_name,
                            page_number):
+        print("Observation JSON:", observation_json)
+        print(type(observation_json))
 
+        
         observation = Observation()
 
         observation.metric = observation_json.get(
