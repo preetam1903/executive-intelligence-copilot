@@ -29,19 +29,31 @@ class RepositoryUpdater:
 
     def create_business_key(self, executive_object):
 
+        business_area = str(
+            executive_object.business_area or ""
+        ).strip().lower()
+
+        unit = str(
+            executive_object.unit or ""
+        ).strip().lower()
+
+        title = str(
+        executive_object.title or ""
+        ).strip().lower()
+
+        object_type = str(
+            executive_object.object_type or ""
+        ).strip().lower()
+
         return "|".join([
 
-            executive_object.object_type.strip().lower(),
+            business_area,
 
-            executive_object.title.strip().lower(),
+            unit,
 
-            executive_object.plant.strip().lower(),
+            title,
 
-            executive_object.unit.strip().lower(),
-
-            executive_object.business_area.strip().lower(),
-
-            executive_object.time_period.strip().lower()
+            object_type
 
         ])
 
