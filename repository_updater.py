@@ -178,7 +178,9 @@ class RepositoryUpdater:
         # New Object
         # ------------------------------------------------
 
-        self.repository.cursor.execute(
+        try:
+
+            self.repository.cursor.execute(
 
             """
             INSERT INTO executive_objects
@@ -265,7 +267,15 @@ class RepositoryUpdater:
             )
 
         )
+        except Exception as ex:
 
+            print("=" * 80)
+            print("SAVE EXECUTIVE OBJECT ERROR")
+            print(type(ex))
+            print(ex)
+            print("=" * 80)
+        
+    raise
         self.repository.connection.commit()
 
         return executive_object.object_id

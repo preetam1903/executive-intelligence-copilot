@@ -84,7 +84,7 @@ class RepositoryManager:
 
             metadata TEXT,
 
-            created_on TEXT
+            created_date TEXT
 
         )
 
