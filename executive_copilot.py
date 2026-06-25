@@ -107,19 +107,21 @@ if uploaded_file is not None:
             st.write("Page Count:", pdf.page_count)
             st.write("Type:", type(pdf.page_count))
 
-            page_number = st.slider(
+            page_number = st.number_input(
 
                 "Page",
 
                 min_value=1,
 
-                max_value=max(1, int(pdf.page_count)),
+                max_value=pdf.page_count,
 
-                value=1
+                value=1,
+
+                step=1
 
             )
 
-            page = pdf.load_page(page_number - 1)
+            page = pdf.load_page(int(page_number) - 1)
 
             pix = page.get_pixmap(
 
