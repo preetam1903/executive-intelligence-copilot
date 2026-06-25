@@ -630,6 +630,10 @@ class RepositoryUpdater:
     # Repository Statistics
     # ----------------------------------------------------
 
+        # ----------------------------------------------------
+    # Repository Statistics
+    # ----------------------------------------------------
+
     def repository_statistics(self):
 
         stats = {}
@@ -640,21 +644,39 @@ class RepositoryUpdater:
 
             "observations",
 
-            "discovery_queue"
+            "relationships",
+
+            "discovery_queue",
+
+            "reports"
 
         ]
 
         for table in tables:
 
-            self.repository.cursor.execute(
+            try:
 
-                f"SELECT COUNT(*) AS cnt FROM {table}"
+                self.repository.cursor.execute(
 
-            )
+                    f"SELECT COUNT(*) AS cnt FROM {table}"
 
-            row = self.repository.cursor.fetchone()
+                )
 
-            stats[table] = row["cnt"]
+                row = self.repository.cursor.fetchone()
+
+                if row:
+
+                    stats[table] = row["cnt"]
+
+                else:
+
+                    stats[table] = 0
+
+            except Exception as ex:
+
+                print(f"Repository Statistics Error ({table}) : {ex}")
+
+                stats[table] = 0
 
         return stats
 
