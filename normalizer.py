@@ -132,19 +132,25 @@ class Normalizer:
 
         for observation in observations:
 
-            eio.observations.append(
+            if not isinstance(observation, dict):
 
-                self.create_observation(
+                print("Skipping invalid observation:", observation)
 
-                    observation,
+                continue
 
-                    report_name,
+            obs = self.create_observation(
 
-                    page_number
+                observation,
 
-                )
+                report_name,
+
+                page_number
 
             )
+
+            if obs is not None:
+
+                eio.observations.append(obs)
 
         return eio
 
@@ -156,10 +162,17 @@ class Normalizer:
                            observation_json,
                            report_name,
                            page_number):
+
         print("Observation JSON:", observation_json)
         print(type(observation_json))
 
-        
+    # Ignore invalid observations
+        if not isinstance(observation_json, dict):
+
+            print("Skipping invalid observation")
+
+            return None
+
         observation = Observation()
 
         observation.metric = observation_json.get(

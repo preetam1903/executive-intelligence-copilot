@@ -79,33 +79,53 @@ For this page identify:
 Return JSON in this exact format.
 
 {
-    "page":0,
-
-    "executive_objects":[
-
+  "page": 1,
+  "executive_objects": [
+    {
+      "object_type": "KPI",
+      "title": "Production",
+      "unit": "HSM",
+      "business_area": "Production",
+      "time_period": "Weekly",
+      "observations": [
         {
-
-            "object_type":"",
-
-            "title":"",
-
-            "unit":"",
-
-            "business_area":"",
-
-            "time_period":"",
-
-            "observations":[],
-
-            "commentary":[],
-
-            "domain_intelligence":{}
-
+          "metric": "Production",
+          "period": "W1",
+          "value": "97",
+          "target": "100"
+        },
+        {
+          "metric": "Production",
+          "period": "W2",
+          "value": "95",
+          "target": "100"
         }
-
-    ]
+      ],
+      "commentary": [],
+      "domain_intelligence": {
+        "trend": "Down",
+        "risk": "High"
+      }
+    }
+  ]
 }
 
+IMPORTANT
+
+Every item inside "observations" MUST be a JSON object.
+
+Never return strings.
+
+Never return numbers.
+
+Never return arrays of values.
+
+Each observation must contain:
+
+metric
+period
+value
+target
 For charts extract:
 
 Title
