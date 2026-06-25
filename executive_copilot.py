@@ -219,6 +219,13 @@ if uploaded_file is not None:
       "risk":"",
       "business_impact":""
     }
+  ],
+  "commentary":[
+    {
+      "topic":"",
+      "summary":"",
+      "type":""
+    }
   ]
 }
 
