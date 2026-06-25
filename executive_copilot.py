@@ -1,345 +1,303 @@
 import streamlit as st
 import fitz
-import base64
 from PIL import Image
 import io
-from openai import OpenAI
-import json
 
-client = OpenAI(
-    api_key=st.secrets["OPENAI_API_KEY"]
+from knowledge_repository import RepositoryManager
+from executive_agent import ExecutiveAgent
+
+# ----------------------------------------------------
+# Streamlit Configuration
+# ----------------------------------------------------
+
+st.set_page_config(
+    page_title="Executive Intelligence Copilot",
+    layout="wide"
 )
-st.set_page_config(layout="wide")
 
 st.title("Executive Intelligence Copilot")
 
+# ----------------------------------------------------
+# Repository
+# ----------------------------------------------------
+
+if "repository" not in st.session_state:
+
+    repo = RepositoryManager()
+
+    repo.initialize_database()
+
+    st.session_state["repository"] = repo
+
+# ----------------------------------------------------
+# Executive Agent
+# ----------------------------------------------------
+
+if "executive_agent" not in st.session_state:
+
+    st.session_state["executive_agent"] = ExecutiveAgent(
+
+        st.secrets["OPENAI_API_KEY"],
+
+        st.session_state["repository"]
+
+    )
+
+agent = st.session_state["executive_agent"]
+
+# ----------------------------------------------------
+# Upload PDF
+# ----------------------------------------------------
+
 uploaded_file = st.file_uploader(
-    "Upload PDF Report",
+
+    "Upload Executive Report",
+
     type=["pdf"]
+
 )
+
+# ----------------------------------------------------
+# PDF Preview
+# ----------------------------------------------------
 
 if uploaded_file is not None:
 
     pdf = fitz.open(
+
         stream=uploaded_file.read(),
+
         filetype="pdf"
+
     )
 
     st.success(
-        f"PDF Loaded Successfully - {pdf.page_count} Pages"
+
+        f"Loaded {pdf.page_count} pages."
+
     )
 
     page_no = st.selectbox(
+
         "Select Page",
+
         range(pdf.page_count)
+
     )
 
     page = pdf.load_page(page_no)
 
     pix = page.get_pixmap(
-        matrix=fitz.Matrix(2, 2)
+
+        matrix=fitz.Matrix(2,2)
+
     )
 
     img = pix.tobytes("png")
 
     st.image(
+
         img,
-        caption=f"Page {page_no + 1}"
+
+        caption=f"Page {page_no+1}",
+
+        use_container_width=True
+
     )
-    if st.button("Segment Page"):
 
-        image = Image.open(
-            io.BytesIO(img)
+# ----------------------------------------------------
+# Build Knowledge Repository
+# ----------------------------------------------------
+if uploaded_file is not None:
+
+    if st.button(
+
+        "Build Executive Knowledge Repository"
+
+    ):
+
+
+
+    with st.spinner(
+
+        "Analyzing report..."
+
+    ):
+        uploaded_file.seek(0)
+        result = agent.process_report(
+
+            uploaded_file
+
         )
 
-        st.write(
-            f"Image Size: {image.width} x {image.height}"
+        st.session_state["analysis_complete"] = True
+
+        st.success(
+
+            "Knowledge Repository Updated"
+
         )
 
-        cols = 4
-        rows = 4
+        st.write(result)
 
-        segment_width = image.width // cols
-        segment_height = image.height // rows
+# ----------------------------------------------------
+# Executive Repository Dashboard
+# ----------------------------------------------------
 
-        st.subheader("Page Segments")
+if st.session_state.get("analysis_complete", False):
 
-        segment_no = 1
+    st.divider()
 
-        for row in range(rows):
+    st.subheader("Executive Repository")
 
-            display_cols = st.columns(cols)
+    stats = agent.repository_statistics()
 
-            for col in range(cols):
+    c1, c2, c3 = st.columns(3)
 
-                left = col * segment_width
-                top = row * segment_height
+    with c1:
+        st.metric(
+            "Current Report",
+            stats["current_report"]
+        )
 
-                right = left + segment_width
-                bottom = top + segment_height
+    with c2:
+        st.metric(
+            "Executive Objects",
+            stats["executive_objects"]
+        )
 
-                segment = image.crop(
-                    (left, top, right, bottom)
-                )
+    with c3:
+        st.metric(
+            "Relationships",
+            stats["relationships"]
+        )
 
-                with display_cols[col]:
+# ----------------------------------------------------
+# Agent Health
+# ----------------------------------------------------
 
-                    st.write(
-                        f"Segment {segment_no}"
-                    )
+    with st.expander(
+        "Agent Health"
+    ):
 
-                    st.image(segment)
+        st.json(
+            agent.health_check()
+        )
 
-                segment_no += 1
+# ----------------------------------------------------
+# Executive Chat
+# ----------------------------------------------------
 
+    st.divider()
 
-        
+    st.subheader("Executive Copilot")
 
+    question = st.text_input(
 
-    
-    if st.button("Analyze Page"):
+        "Ask anything about this report",
 
-        base64_image = base64.b64encode(
-            img
-        ).decode("utf-8")
+        placeholder="Example: What should I focus on?"
 
-        with st.spinner("Analyzing page..."):
+    )
 
-            response = client.chat.completions.create(
-                model="gpt-4.1",
+    if st.button("Ask Executive Copilot"):
 
-                messages=[
-                    {
-                        "role": "user",
-                        "content": [
+        if question.strip() == "":
 
-                            {
-                                "type": "text",
-                                "text": """
-    Analyze this manufacturing report page.
-
-    Return JSON ONLY.
-
-    {
-      "kpis":[
-        {
-          "name":"",
-          "trend":"",
-          "risk":"",
-          "business_impact":""
-        }
-      ]
-    }
-
-    Rules:
-    - Extract every KPI you can identify.
-    - Trend must be Up, Down or Stable.
-    - Risk must be Low, Medium or High.
-    - business_impact should be short.
-    - Return valid JSON only.
-    """
-                            },
-
-                            {
-                                "type": "image_url",
-                                "image_url": {
-                                    "url": f"data:image/png;base64,{base64_image}"
-                                }
-                            }
-
-                        ]
-                    }
-                ],
-
-                temperature=0
+            st.warning(
+                "Please enter a question."
             )
 
-            result = response.choices[0].message.content
+        else:
 
-            st.subheader("Vision Analysis")
+            with st.spinner(
+                "Reasoning..."
+            ):
 
-            st.write(result)
-
-    if st.button("Analyze Entire Report"):
-        operational_model = []
-        report_summary = ""
-
-        with st.spinner("Analyzing report..."):
-
-            for page_num in range(pdf.page_count):
-
-                page = pdf.load_page(page_num)
-
-                pix = page.get_pixmap(
-                    matrix=fitz.Matrix(2,2)
+                result = agent.ask(
+                    question
                 )
 
-                page_img = pix.tobytes("png")
-
-                base64_image = base64.b64encode(
-                    page_img
-                ).decode("utf-8")
-
-                response = client.chat.completions.create(
-                    model="gpt-4.1",
-
-                    messages=[
-                        {
-                            "role":"user",
-                            "content":[
-
-                                {
-                                    "type":"text",
-                                    "text":"""
-    Analyze this manufacturing report page.
-
-    Return ONLY valid JSON.
-
-    {
-  "kpis":[
-    {
-      "name":"",
-
-      "weekly_values": {
-        "W1":"",
-        "W2":"",
-        "W3":"",
-        "W4":""
-      },
-
-      "target_values": {
-        "W1":"",
-        "W2":"",
-        "W3":"",
-        "W4":""
-      },
-
-      "status":"",
-      "trend":"",
-      "risk":"",
-      "business_impact":""
-    }
-  ],
-  "commentary":[
-    {
-      "topic":"",
-      "summary":"",
-      "type":""
-    }
-  ]
-}
-
-    Rules:
-    - Extract KPI name.
-    - Extract all visible weekly values (W1, W2, W3, W4).
-    - Extract all visible target values (W1, W2, W3, W4) if a target line, target bars, or target table is present.
-    - If no target values are visible, leave the target values empty. Never guess target values.
-    - Do not return only the latest week's value.
-    - Extract status (RED/AMBER/GREEN if visible).
-    - Trend = Up/Down/Stable.
-    - Risk = Low/Medium/High.
-    - Return JSON only.
-    - No markdown.
-    - No explanation.
-    """
-                                },
-
-                                {
-                                    "type":"image_url",
-                                    "image_url":{
-                                        "url":f"data:image/png;base64,{base64_image}"
-                                    }
-                                }
-                            ]
-                        }
-                    ],
-
-                    temperature=0
+                st.markdown(
+                    result["answer"]
                 )
 
-                page_result = response.choices[0].message.content
+# ----------------------------------------------------
+# View Executive Objects
+# ----------------------------------------------------
 
-                try:
+    with st.expander(
+        "Executive Objects"
+    ):
 
-                    page_json = json.loads(page_result)
+        for obj in agent.executive_objects:
 
-                    operational_model.append(
-                        {
-                            "page": page_num + 1,
-                            "kpis": page_json.get("kpis", [])
-                        }
-                    )
+            st.markdown(
+                f"### {obj.title}"
+            )
 
-                except Exception as e:
+            st.write(
+                f"Type : {obj.object_type}"
+            )
 
-                    operational_model.append(
-                        {
-                            "page": page_num + 1,
-                            "error": str(e)
-                        }
-                    )
+            st.write(
+                f"Business Area : {obj.business_area}"
+            )
 
-                report_summary += f"\n\nPAGE {page_num+1}\n"
-                report_summary += page_result
+            st.write(
+                f"Unit : {obj.unit}"
+            )
 
-        st.session_state["report_summary"] = report_summary
-        st.session_state["operational_model"] = operational_model
+            st.write(
+                f"Page : {obj.page}"
+            )
 
-        st.success("Report Analysis Complete")
+            st.write(
+                "Observations"
+            )
 
-        st.text_area(
-            "Page Analysis",
-            report_summary,
-            height=500
-        )
+            for obs in obj.observations:
 
-        st.subheader("Operational Knowledge Model")
-        st.write(operational_model)
-    
-    if "report_summary" in st.session_state:
-
-        if st.button("Generate Executive Summary"):
-
-            with st.spinner("Generating Executive Summary..."):
-
-                summary_response = client.chat.completions.create(
-                    model="gpt-4.1",
-
-                    messages=[
-                        {
-                            "role": "user",
-                            "content": f"""
-        You are a COO advisor.
-
-        Using the findings below:
-
-        {st.session_state['report_summary']}
-
-        Provide:
-
-        1. Executive Summary
-        2. Top Risks
-        3. Critical Areas
-        4. Watch Items
-    
-        Keep it concise.
-        """
-                        }
-                    ],
-
-                    temperature=0
+                st.json(
+                    vars(obs)
                 )
 
-                st.subheader("Executive Summary")
+            st.divider()
 
-                st.write(
-                    summary_response.choices[0].message.content
-                )
+# ----------------------------------------------------
+# Relationships
+# ----------------------------------------------------
 
+    with st.expander(
+        "Relationships"
+    ):
 
-    
-    st.subheader("Extracted Text")
+        if len(agent.relationships) == 0:
 
-    st.text(
-        page.get_text()
-    )
+            st.info(
+                "No relationships detected."
+            )
+
+        else:
+
+            st.json(
+                agent.relationships
+            )
+
+# ----------------------------------------------------
+# Reset
+# ----------------------------------------------------
+
+    st.divider()
+
+    if st.button(
+
+        "Reset Session"
+
+    ):
+
+        agent.reset()
+
+        st.session_state.clear()
+
+        st.rerun()
