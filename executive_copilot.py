@@ -1,21 +1,24 @@
 import streamlit as st
 import fitz
-from PIL import Image
-import io
 
 from knowledge_repository import RepositoryManager
 from executive_agent import ExecutiveAgent
 
+
 # ----------------------------------------------------
-# Streamlit Configuration
+# Streamlit
 # ----------------------------------------------------
 
 st.set_page_config(
+
     page_title="Executive Intelligence Copilot",
+
     layout="wide"
+
 )
 
 st.title("Executive Intelligence Copilot")
+
 
 # ----------------------------------------------------
 # Repository
@@ -23,19 +26,20 @@ st.title("Executive Intelligence Copilot")
 
 if "repository" not in st.session_state:
 
-    repo = RepositoryManager()
+    repository = RepositoryManager()
 
-    repo.initialize_database()
+    repository.initialize_database()
 
-    st.session_state["repository"] = repo
+    st.session_state["repository"] = repository
+
 
 # ----------------------------------------------------
 # Executive Agent
 # ----------------------------------------------------
 
-if "executive_agent" not in st.session_state:
+if "agent" not in st.session_state:
 
-    st.session_state["executive_agent"] = ExecutiveAgent(
+    st.session_state["agent"] = ExecutiveAgent(
 
         st.secrets["OPENAI_API_KEY"],
 
@@ -43,10 +47,20 @@ if "executive_agent" not in st.session_state:
 
     )
 
-agent = st.session_state["executive_agent"]
+agent = st.session_state["agent"]
+
 
 # ----------------------------------------------------
-# Upload PDF
+# Session
+# ----------------------------------------------------
+
+if "analysis_complete" not in st.session_state:
+
+    st.session_state["analysis_complete"] = False
+
+
+# ----------------------------------------------------
+# Upload
 # ----------------------------------------------------
 
 uploaded_file = st.file_uploader(
@@ -57,8 +71,9 @@ uploaded_file = st.file_uploader(
 
 )
 
+
 # ----------------------------------------------------
-# PDF Preview
+# Preview
 # ----------------------------------------------------
 
 if uploaded_file is not None:
@@ -71,49 +86,72 @@ if uploaded_file is not None:
 
     )
 
-    st.success(
+    left, right = st.columns([3, 1])
 
-        f"Loaded {pdf.page_count} pages."
+    with left:
 
-    )
+        page_number = st.slider(
 
-    page_no = st.selectbox(
+            "Page",
 
-        "Select Page",
+            1,
 
-        range(pdf.page_count)
+            pdf.page_count,
 
-    )
+            1
 
-    page = pdf.load_page(page_no)
+        )
 
-    pix = page.get_pixmap(
+        page = pdf.load_page(page_number - 1)
 
-        matrix=fitz.Matrix(2,2)
+        pix = page.get_pixmap(
 
-    )
+            matrix=fitz.Matrix(2, 2)
 
-    img = pix.tobytes("png")
+        )
 
-    st.image(
+        st.image(
 
-        img,
+            pix.tobytes("png"),
 
-        caption=f"Page {page_no+1}",
+            use_container_width=True
 
-        use_container_width=True
+        )
 
-    )
+    with right:
+
+        st.metric(
+
+            "Pages",
+
+            pdf.page_count
+
+        )
+
+        st.metric(
+
+            "Report",
+
+            uploaded_file.name
+
+        )
+
+    pdf.close()
+
+    uploaded_file.seek(0)
+
 
 # ----------------------------------------------------
-# Build Knowledge Repository
+# Build Repository
 # ----------------------------------------------------
 
 if uploaded_file is not None:
 
     if st.button(
 
-        "Build Executive Knowledge Repository"
+        "Build Executive Knowledge Repository",
+
+        use_container_width=True
 
     ):
 
@@ -131,58 +169,84 @@ if uploaded_file is not None:
 
             )
 
-            st.session_state["analysis_complete"] = True
+        st.session_state["analysis_complete"] = True
 
-            st.success(
+        st.success(
 
-                "Knowledge Repository Updated"
+            "Knowledge Repository Created"
 
-            )
+        )
 
-            st.write(result)
+        st.json(result)
 
 # ----------------------------------------------------
-# Executive Repository Dashboard
+# Dashboard
 # ----------------------------------------------------
 
-if st.session_state.get("analysis_complete", False):
+if st.session_state["analysis_complete"]:
 
     st.divider()
 
-    st.subheader("Executive Repository")
-
-    stats = agent.repository_statistics()
+    stats = agent.current_session()
 
     c1, c2, c3 = st.columns(3)
 
     with c1:
+
         st.metric(
-            "Current Report",
-            stats["current_report"]
+
+            "Report",
+
+            stats["report"]
+
         )
 
     with c2:
+
         st.metric(
+
             "Executive Objects",
+
             stats["executive_objects"]
+
         )
 
     with c3:
+
         st.metric(
+
             "Relationships",
+
             stats["relationships"]
+
         )
+
+    st.divider()
+
+    repository_stats = agent.repository_statistics()
+
+    st.subheader("Knowledge Repository")
+
+    st.json(
+
+        repository_stats
+
+    )
 
 # ----------------------------------------------------
 # Agent Health
 # ----------------------------------------------------
 
     with st.expander(
+
         "Agent Health"
+
     ):
 
         st.json(
+
             agent.health_check()
+
         )
 
 # ----------------------------------------------------
@@ -191,77 +255,141 @@ if st.session_state.get("analysis_complete", False):
 
     st.divider()
 
-    st.subheader("Executive Copilot")
+    st.subheader(
+
+        "Executive Copilot"
+
+    )
 
     question = st.text_input(
 
-        "Ask anything about this report",
+        "Ask a question",
 
         placeholder="Example: What should I focus on?"
 
     )
 
-    if st.button("Ask Executive Copilot"):
+    ask = st.button(
+
+        "Ask Executive Copilot",
+
+        use_container_width=True
+
+    )
+
+    if ask:
 
         if question.strip() == "":
 
             st.warning(
-                "Please enter a question."
+
+                "Enter a question."
+
             )
 
         else:
 
             with st.spinner(
+
                 "Reasoning..."
+
             ):
 
                 result = agent.ask(
+
                     question
+
                 )
 
-                st.markdown(
-                    result["answer"]
-                )
+            st.success(
+
+                "Analysis Complete"
+
+            )
+
+            st.markdown(
+
+                result["answer"]
+
+            )
 
 # ----------------------------------------------------
-# View Executive Objects
+# Executive Objects
 # ----------------------------------------------------
 
     with st.expander(
+
         "Executive Objects"
+
     ):
 
         for obj in agent.executive_objects:
 
             st.markdown(
+
                 f"### {obj.title}"
+
             )
 
             st.write(
+
                 f"Type : {obj.object_type}"
+
             )
 
             st.write(
+
                 f"Business Area : {obj.business_area}"
+
             )
 
             st.write(
+
                 f"Unit : {obj.unit}"
+
             )
 
             st.write(
+
+                f"Time Period : {obj.time_period}"
+
+            )
+
+            st.write(
+
                 f"Page : {obj.page}"
+
             )
 
-            st.write(
-                "Observations"
-            )
+            if obj.commentary:
 
-            for obs in obj.observations:
+                st.write(
+
+                    "**Commentary**"
+
+                )
 
                 st.json(
-                    vars(obs)
+
+                    obj.commentary
+
                 )
+
+            if obj.observations:
+
+                st.write(
+
+                    "**Observations**"
+
+                )
+
+                for obs in obj.observations:
+
+                    st.json(
+
+                        vars(obs)
+
+                    )
 
             st.divider()
 
@@ -270,19 +398,25 @@ if st.session_state.get("analysis_complete", False):
 # ----------------------------------------------------
 
     with st.expander(
+
         "Relationships"
+
     ):
 
         if len(agent.relationships) == 0:
 
             st.info(
+
                 "No relationships detected."
+
             )
 
         else:
 
             st.json(
+
                 agent.relationships
+
             )
 
 # ----------------------------------------------------
@@ -293,12 +427,17 @@ if st.session_state.get("analysis_complete", False):
 
     if st.button(
 
-        "Reset Session"
+        "Reset Session",
+
+        use_container_width=True
 
     ):
 
         agent.reset()
 
-        st.session_state.clear()
+        for key in list(st.session_state.keys()):
+
+            del st.session_state[key]
 
         st.rerun()
+

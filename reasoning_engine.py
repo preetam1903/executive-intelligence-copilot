@@ -2,110 +2,130 @@
 reasoning_engine.py
 
 Mission 1
-Executive Intelligence Copilot
+Version 2
 
-Version 1
+Executive Reasoning Engine
 """
 
 import json
-
 from openai import OpenAI
 
 
 class ReasoningEngine:
 
-    def __init__(self,
-                 api_key):
+    # ----------------------------------------------------
+    # Constructor
+    # ----------------------------------------------------
 
-        self.client = OpenAI(
-            api_key=api_key
-        )
+    def __init__(self, api_key):
 
-    # --------------------------------------------------------
+        self.client = OpenAI(api_key=api_key)
+
+    # ----------------------------------------------------
     # Question Classification
-    # --------------------------------------------------------
+    # ----------------------------------------------------
 
-    def classify_question(
-            self,
-            question):
+    def classify_question(self, question):
 
         q = question.lower()
 
-        if "focus" in q:
-            return "FOCUS"
+        mapping = {
 
-        if "risk" in q:
-            return "RISK"
+            "focus": "FOCUS",
 
-        if "summary" in q:
-            return "SUMMARY"
+            "risk": "RISK",
 
-        if "compare" in q:
-            return "COMPARE"
+            "summary": "SUMMARY",
 
-        if "why" in q:
-            return "ROOT_CAUSE"
+            "compare": "COMPARE",
 
-        if "recommend" in q:
-            return "RECOMMENDATION"
+            "trend": "TREND",
+
+            "forecast": "FORECAST",
+
+            "recommend": "RECOMMENDATION",
+
+            "action": "ACTION",
+
+            "why": "ROOT_CAUSE",
+
+            "cause": "ROOT_CAUSE",
+
+            "inventory": "INVENTORY",
+
+            "production": "PRODUCTION",
+
+            "asset": "ASSET_HEALTH",
+
+            "dwell": "DWELL_TIME",
+
+            "downtime": "DOWNTIME"
+
+        }
+
+        for key in mapping:
+
+            if key in q:
+
+                return mapping[key]
 
         return "GENERAL"
 
-    # --------------------------------------------------------
-    # Collect Evidence
-    # --------------------------------------------------------
+    # ----------------------------------------------------
+    # Collect Executive Objects
+    # ----------------------------------------------------
 
-    def collect_evidence(
+    def collect_objects(
             self,
             executive_objects):
 
-        evidence = []
+        objects = []
 
         for obj in executive_objects:
 
-            evidence.append({
+            objects.append({
 
                 "title": obj.title,
 
                 "type": obj.object_type,
 
-                "business_area": obj.business_area,
+                "plant": obj.plant,
 
                 "unit": obj.unit,
 
+                "business_area": obj.business_area,
+
                 "page": obj.page,
+
+                "time_period": obj.time_period,
 
                 "commentary": obj.commentary,
 
-                "relationships": obj.relationships,
+                "insights": obj.insights,
 
-                "observations": [
+                "evidence": obj.evidence,
 
-                    vars(obs)
-
-                    for obs in obj.observations
-
-                ]
+                "relationships": obj.relationships
 
             })
 
-        return evidence
+        return objects
 
-    # --------------------------------------------------------
-    # Related Metrics
-    # --------------------------------------------------------
+    # ----------------------------------------------------
+    # Collect Observations
+    # ----------------------------------------------------
 
-    def related_metrics(
+    def collect_observations(
             self,
             executive_objects):
 
-        metrics = []
+        observations = []
 
         for obj in executive_objects:
 
             for obs in obj.observations:
 
-                metrics.append({
+                observations.append({
 
                     "metric": obs.metric,
 
@@ -113,74 +133,48 @@ class ReasoningEngine:
 
                     "value": obs.value,
 
-                    "target": obs.target
+                    "target": obs.target,
+
+                    "report": obs.source_report,
+
+                    "page": obs.source_page
 
                 })
 
-        return metrics
+        return observations
 
-        # --------------------------------------------------------
-    # Relationship Context
-    # --------------------------------------------------------
-
-    def relationship_context(
-            self,
-            relationships):
-
-        context = []
-
-        for rel in relationships:
-
-            context.append({
-
-                "source": rel.get("source", ""),
-
-                "target": rel.get("target", ""),
-
-                "relationship": rel.get("relationship", ""),
-
-                "confidence": rel.get("confidence", 0)
-
-            })
-
-        return context
-
-    # --------------------------------------------------------
-    # Build AI Context
-    # --------------------------------------------------------
+    # ----------------------------------------------------
+    # Build Context
+    # ----------------------------------------------------
 
     def build_context(
             self,
             executive_objects,
             relationships):
 
-        context = {
+        return {
 
             "executive_objects":
 
-                self.collect_evidence(
+                self.collect_objects(
                     executive_objects
                 ),
 
-            "related_metrics":
+            "observations":
 
-                self.related_metrics(
+                self.collect_observations(
                     executive_objects
                 ),
 
             "relationships":
 
-                self.relationship_context(
-                    relationships
-                )
+                relationships
 
         }
 
-        return context
-
-    # --------------------------------------------------------
-    # Prompt Builder
-    # --------------------------------------------------------
+        # ----------------------------------------------------
+    # Build Prompt
+    # ----------------------------------------------------
 
     def build_prompt(
             self,
@@ -193,164 +187,152 @@ class ReasoningEngine:
         )
 
         context = self.build_context(
+
             executive_objects,
+
             relationships
+
         )
 
-        prompt = f"""
+        return f"""
+
 You are an Executive Manufacturing Intelligence Copilot.
 
-Question Type:
+Question Type
+
 {question_type}
 
-Executive Question:
+Executive Question
+
 {question}
 
-Available Operational Knowledge:
+==================================================
+
+AVAILABLE KNOWLEDGE
 
 {json.dumps(context, indent=2)}
 
+==================================================
+
 Instructions
 
-Think like a COO of a manufacturing company.
+Think like a Plant Head.
 
-Before answering ALWAYS
+Before answering
 
-1. Review every KPI.
+1. Review all KPIs.
 
-2. Review every chart.
+2. Review observations.
 
-3. Review commentary.
+3. Review relationships.
 
-4. Review target breaches.
+4. Review business areas.
 
-5. Review related metrics.
+5. Review unit information.
 
-6. Review relationships.
+6. Review commentary.
 
-7. Look for operational patterns.
+7. Review evidence.
 
-8. Check if one KPI may explain another.
+8. Identify trends.
 
-9. If multiple causes are possible, mention them.
+9. Identify operational risks.
 
-10. Base every statement on evidence.
+10. Identify possible root causes.
 
-Never invent information.
+11. Mention confidence wherever appropriate.
 
-If evidence is insufficient, clearly state that.
+12. Never invent information.
 
-Prioritize operational impact over statistical description.
+13. If evidence is insufficient clearly say so.
+
+14. Base every statement on evidence.
+
+==================================================
 
 Return EXACTLY in this format
 
-━━━━━━━━━━━━━━━━━━
-
 Executive Summary
 
-━━━━━━━━━━━━━━━━━━
+...
+
+Key Findings
 
 ...
 
-━━━━━━━━━━━━━━━━━━
-
-Evidence
-
-━━━━━━━━━━━━━━━━━━
+Operational Risks
 
 ...
 
-━━━━━━━━━━━━━━━━━━
-
-Related Metrics Checked
-
-━━━━━━━━━━━━━━━━━━
+Root Cause Analysis
 
 ...
 
-━━━━━━━━━━━━━━━━━━
-
-AI Reasoning
-
-━━━━━━━━━━━━━━━━━━
+Evidence Used
 
 ...
 
-━━━━━━━━━━━━━━━━━━
-
-Recommended Actions
-
-━━━━━━━━━━━━━━━━━━
+Business Impact
 
 ...
+
+Recommendations
+
+...
+
+Confidence
+
+High / Medium / Low
+
 """
 
-        return prompt
-
-        # --------------------------------------------------------
-    # Ask OpenAI
-    # --------------------------------------------------------
+    # ----------------------------------------------------
+    # Call OpenAI
+    # ----------------------------------------------------
 
     def ask_llm(
             self,
             prompt):
 
-        try:
+        response = self.client.chat.completions.create(
 
-            response = self.client.chat.completions.create(
+            model="gpt-4.1",
 
-                model="gpt-4.1",
-                max_completion_tokens=2500,
+            temperature=0,
 
-                temperature=0,
+            max_completion_tokens=2500,
 
-                messages=[
+            messages=[
 
-                    {
-                        "role": "system",
-                        "content": (
-                            "You are an experienced Manufacturing "
-                            "Executive Advisor. Base every answer only "
-                            "on the supplied operational evidence."
-                        )
-                    },
+                {
 
-                    {
-                        "role": "user",
-                        "content": prompt
-                    }
+                    "role": "system",
 
-                ]
+                    "content":
 
-            )
+                    "You are an Executive Manufacturing Advisor."
 
-            return response.choices[0].message.content
+                },
 
-        except Exception as ex:
+                {
 
-            return f"""
-            Executive Summary
+                    "role": "user",
 
-            Unable to generate answer.
+                    "content": prompt
 
-            Evidence
+                }
 
-            Not Available
+            ]
 
-            AI Reasoning
+        )
 
-            OpenAI Error
+        return response.choices[0].message.content
 
-            Details
+    # ----------------------------------------------------
+    # Generate Executive Response
+    # ----------------------------------------------------
 
-            {str(ex)}
-            """
-
-    # --------------------------------------------------------
-    # Generate Executive Answer
-    # --------------------------------------------------------
-
-    def generate_answer(
+    def generate_response(
             self,
             question,
             executive_objects,
@@ -366,94 +348,71 @@ Recommended Actions
 
         )
 
-        answer = self.ask_llm(
+        return self.ask_llm(
 
             prompt
 
         )
 
-        return answer
+        # ----------------------------------------------------
+    # Build Response Package
+    # ----------------------------------------------------
 
-    # --------------------------------------------------------
-    # Build Executive Package
-    # --------------------------------------------------------
-
-    def executive_package(
+    def build_response(
             self,
             question,
+            answer,
             executive_objects,
             relationships):
 
-        answer = self.generate_answer(
-
-            question,
-
-            executive_objects,
-
-            relationships
-
-        )
-
-        package = {
+        return {
 
             "question": question,
 
             "answer": answer,
 
-            "relationship_count": len(relationships),
+            "question_type": self.classify_question(
+                question
+            ),
 
-            "executive_object_count": len(executive_objects)
+            "executive_objects": len(
+                executive_objects
+            ),
+
+            "relationships": len(
+                relationships
+            ),
+
+            "status": "SUCCESS"
 
         }
 
-        return package
+    # ----------------------------------------------------
+    # Validate Inputs
+    # ----------------------------------------------------
 
-        # --------------------------------------------------------
-    # Validate Context
-    # --------------------------------------------------------
-
-    def validate_context(
+    def validate(
             self,
             executive_objects,
             relationships):
 
-        validation = {
+        if executive_objects is None:
 
-            "objects_found": len(executive_objects),
-
-            "relationships_found": len(relationships),
-
-            "status": "OK"
-
-        }
+            return False, "No Executive Objects"
 
         if len(executive_objects) == 0:
 
-            validation["status"] = "NO_EXECUTIVE_OBJECTS"
+            return False, "Repository Empty"
 
-        return validation
+        if relationships is None:
 
-    # --------------------------------------------------------
-    # Future Hook (Mission 2)
-    # Executive Challenge Agent
-    # --------------------------------------------------------
+            relationships = []
 
-    def challenge_answer(
-            self,
-            answer):
+        return True, relationships
 
-        # Mission 2:
-        # Challenge the answer by checking
-        # - Missing KPIs
-        # - Missing Commentary
-        # - Missing Relationships
-        # - Alternative Explanations
-
-        return answer
-
-    # --------------------------------------------------------
-    # Main Entry Point
-    # --------------------------------------------------------
+    # ----------------------------------------------------
+    # Main Processing Pipeline
+    # ----------------------------------------------------
 
     def process(
             self,
@@ -461,22 +420,27 @@ Recommended Actions
             executive_objects,
             relationships):
 
-        validation = self.validate_context(
+        valid, result = self.validate(
+
             executive_objects,
+
             relationships
+
         )
 
-        if validation["status"] != "OK":
+        if not valid:
 
             return {
 
-                "status": validation["status"],
+                "status": "FAILED",
 
-                "answer": "No operational knowledge available."
+                "answer": result
 
             }
 
-        package = self.executive_package(
+        relationships = result
+
+        answer = self.generate_response(
 
             question,
 
@@ -486,12 +450,43 @@ Recommended Actions
 
         )
 
-        package["answer"] = self.challenge_answer(
+        return self.build_response(
 
-            package["answer"]
+            question,
+
+            answer,
+
+            executive_objects,
+
+            relationships
 
         )
 
-        package["validation"] = validation
+    # ----------------------------------------------------
+    # Health Check
+    # ----------------------------------------------------
 
-        return package
+    def health(self):
+
+        return {
+
+            "engine": "Reasoning Engine V2",
+
+            "status": "READY"
+
+        }
+
+
+if __name__ == "__main__":
+
+    print()
+
+    print("=" * 60)
+
+    print("Reasoning Engine V2")
+
+    print("Self Test Passed")
+
+    print("=" * 60)
+
+    

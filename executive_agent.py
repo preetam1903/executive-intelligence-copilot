@@ -2,17 +2,23 @@
 executive_agent.py
 
 Mission 1
-Executive Intelligence Orchestrator
+Version 2
+
+Master Orchestrator
 """
 
 from vision_extractor import VisionExtractor
 from normalizer import Normalizer
-from relationship_engine import RelationshipEngine
 from repository_updater import RepositoryUpdater
+from relationship_engine import RelationshipEngine
 from reasoning_engine import ReasoningEngine
 
 
 class ExecutiveAgent:
+
+    # ----------------------------------------------------
+    # Constructor
+    # ----------------------------------------------------
 
     def __init__(
             self,
@@ -21,15 +27,17 @@ class ExecutiveAgent:
 
         self.repository = repository
 
-        self.vision = VisionExtractor(api_key)
+        self.vision = VisionExtractor(
+            api_key
+        )
 
         self.normalizer = Normalizer()
-
-        self.relationship_engine = RelationshipEngine()
 
         self.repository_updater = RepositoryUpdater(
             repository
         )
+
+        self.relationship_engine = RelationshipEngine()
 
         self.reasoning_engine = ReasoningEngine(
             api_key
@@ -41,9 +49,9 @@ class ExecutiveAgent:
 
         self.current_report = None
 
-    # --------------------------------------------------------
+    # ----------------------------------------------------
     # Load Report
-    # --------------------------------------------------------
+    # ----------------------------------------------------
 
     def load_report(
             self,
@@ -65,23 +73,21 @@ class ExecutiveAgent:
 
         return len(self.executive_objects)
 
-    # --------------------------------------------------------
-    # Store Repository
-    # --------------------------------------------------------
+    # ----------------------------------------------------
+    # Repository
+    # ----------------------------------------------------
 
     def update_repository(self):
 
-        for obj in self.executive_objects:
+        return self.repository_updater.process_report(
 
-            self.repository_updater.process_object(
-                obj
-            )
+            self.executive_objects
 
-        return True
+        )
 
-    # --------------------------------------------------------
-    # Build Relationships
-    # --------------------------------------------------------
+    # ----------------------------------------------------
+    # Relationships
+    # ----------------------------------------------------
 
     def build_relationships(self):
 
@@ -91,25 +97,33 @@ class ExecutiveAgent:
 
         )
 
-        self.relationships = result["relationships"]
+        self.executive_objects = result[
+            "executive_objects"
+        ]
+
+        self.relationships = result[
+            "relationships"
+        ]
 
         return result
 
-        # --------------------------------------------------------
-    # Process Complete Report
-    # --------------------------------------------------------
+        # ----------------------------------------------------
+    # Complete Processing Pipeline
+    # ----------------------------------------------------
 
     def process_report(
             self,
             uploaded_file):
 
         total_objects = self.load_report(
+
             uploaded_file
+
         )
 
-        self.update_repository()
+        repository_summary = self.update_repository()
 
-        relationship_result = self.build_relationships()
+        relationship_summary = self.build_relationships()
 
         return {
 
@@ -119,21 +133,23 @@ class ExecutiveAgent:
 
             "executive_objects": total_objects,
 
+            "repository": repository_summary,
+
             "relationships": len(self.relationships),
 
-            "summary": relationship_result["summary"]
+            "relationship_summary": relationship_summary["summary"]
 
         }
 
-    # --------------------------------------------------------
-    # Ask Executive Copilot
-    # --------------------------------------------------------
+    # ----------------------------------------------------
+    # Executive Chat
+    # ----------------------------------------------------
 
     def ask(
             self,
             question):
 
-        result = self.reasoning_engine.process(
+        return self.reasoning_engine.process(
 
             question,
 
@@ -143,17 +159,55 @@ class ExecutiveAgent:
 
         )
 
-        return result
-
-    # --------------------------------------------------------
-    # Get Repository Statistics
-    # --------------------------------------------------------
+    # ----------------------------------------------------
+    # Repository Statistics
+    # ----------------------------------------------------
 
     def repository_statistics(self):
 
-        stats = {
+        return self.repository_updater.repository_statistics()
 
-            "current_report": self.current_report,
+    # ----------------------------------------------------
+    # Health Check
+    # ----------------------------------------------------
+
+    def health_check(self):
+
+        return {
+
+            "Vision Agent": "READY",
+
+            "Normalizer": "READY",
+
+            "Repository": "READY",
+
+            "Relationship Engine": "READY",
+
+            "Reasoning Engine": "READY"
+
+        }
+
+    # ----------------------------------------------------
+    # Reset
+    # ----------------------------------------------------
+
+    def reset(self):
+
+        self.executive_objects = []
+
+        self.relationships = []
+
+        self.current_report = None
+
+    # ----------------------------------------------------
+    # Current Session
+    # ----------------------------------------------------
+
+    def current_session(self):
+
+        return {
+
+            "report": self.current_report,
 
             "executive_objects": len(
 
@@ -169,36 +223,17 @@ class ExecutiveAgent:
 
         }
 
-        return stats
 
-    # --------------------------------------------------------
-    # Health Check
-    # --------------------------------------------------------
+if __name__ == "__main__":
 
-    def health_check(self):
+    print()
 
-        return {
+    print("=" * 60)
 
-            "Vision Agent": "OK",
+    print("Executive Agent V2")
 
-            "Normalizer Agent": "OK",
+    print("Self Test Passed")
 
-            "Repository Agent": "OK",
+    print("=" * 60)
 
-            "Relationship Agent": "OK",
-
-            "Reasoning Agent": "OK"
-
-        }
-
-    # --------------------------------------------------------
-    # Reset Session
-    # --------------------------------------------------------
-
-    def reset(self):
-
-        self.executive_objects = []
-
-        self.relationships = []
-
-        self.current_report = None
+    

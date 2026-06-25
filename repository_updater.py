@@ -2,134 +2,68 @@
 repository_updater.py
 
 Mission 1
+Version 2
 
-Responsible for
+Repository Intelligence Layer
 
-1. Detect duplicate knowledge
-2. Insert new Executive Objects
+Responsibilities
+
+1. Insert Executive Objects
+2. Detect duplicates
 3. Insert Observations
-4. Update Discovery Queue
+4. Maintain Report History
+5. Maintain Discovery Queue
+6. Update Existing Knowledge
 """
 
 import json
 from datetime import datetime
 
-from executive_intelligence_model import ExecutiveIntelligenceObject
-
 
 class RepositoryUpdater:
+
+    # ----------------------------------------------------
+    # Constructor
+    # ----------------------------------------------------
 
     def __init__(self, repository):
 
         self.repository = repository
 
-    # ---------------------------------------------------
-    # BUSINESS KEY
-    # ---------------------------------------------------
+    # ----------------------------------------------------
+    # Safe String
+    # ----------------------------------------------------
 
-    def create_business_key(self, executive_object):
+    def safe_string(self, value):
 
-        business_area = str(
-            executive_object.business_area or ""
-        ).strip().lower()
+        if value is None:
+            return ""
 
-        unit = str(
-            executive_object.unit or ""
-        ).strip().lower()
+        if isinstance(value, dict):
+            return json.dumps(value)
 
-        title = str(
-        executive_object.title or ""
-        ).strip().lower()
+        if isinstance(value, list):
+            return json.dumps(value)
 
-        object_type = str(
-            executive_object.object_type or ""
-        ).strip().lower()
+        return str(value).strip()
 
-        return "|".join([
+    # ----------------------------------------------------
+    # Safe Lower
+    # ----------------------------------------------------
 
-            business_area,
+    def safe_lower(self, value):
 
-            unit,
+        return self.safe_string(value).lower()
 
-            title,
+    # ----------------------------------------------------
+    # Business Key
+    # ----------------------------------------------------
 
-            object_type
+    def create_business_key(
+            self,
+            executive_object):
 
-        ])
-
-    # ---------------------------------------------------
-    # CHECK DUPLICATE OBJECT
-    # ---------------------------------------------------
-
-    def object_exists(self, executive_object):
-
-        business_key = self.create_business_key(executive_object)
-
-        self.repository.cursor.execute("""
-
-        SELECT object_id
-
-        FROM executive_objects
-
-        WHERE lower(object_type)=?
-
-        AND lower(title)=?
-        AND lower(plant)=?
-        AND lower(unit)=?
-        AND lower(business_area)=?
-        AND lower(time_period)=?
-
-        """,
-
-        (
-
-            executive_object.object_type.lower(),
-
-            executive_object.title.lower(),
-
-            executive_object.plant.lower(),
-
-            executive_object.unit.lower(),
-
-            executive_object.business_area.lower(),
-
-            executive_object.time_period.lower()
-
-        )
-
-        )
-
-        row = self.repository.cursor.fetchone()
-
-        if row:
-
-            return True, row["object_id"]
-
-        return False, None
-
-    # ---------------------------------------------------
-    # SAVE EXECUTIVE OBJECT
-    # ---------------------------------------------------
-
-    def save_executive_object(self, executive_object):
-
-        exists, object_id = self.object_exists(executive_object)
-
-        if exists:
-
-            return object_id
-
-        self.repository.cursor.execute("""
-
-        INSERT INTO executive_objects
-
-        VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
-
-        """,
-
-        (
-
-            executive_object.object_id,
+        fields = [
 
             executive_object.object_type,
 
@@ -141,25 +75,194 @@ class RepositoryUpdater:
 
             executive_object.business_area,
 
-            executive_object.report_name,
+            executive_object.time_period
 
-            executive_object.page,
+        ]
 
-            executive_object.time_period,
+        return "|".join(
 
-            json.dumps(executive_object.commentary),
+            self.safe_lower(f)
 
-            json.dumps(executive_object.insights),
-
-            json.dumps(executive_object.evidence),
-
-            json.dumps(executive_object.domain_intelligence),
-
-            json.dumps(executive_object.metadata),
-
-            datetime.now().isoformat()
+            for f in fields
 
         )
+
+    # ----------------------------------------------------
+    # Check Duplicate Executive Object
+    # ----------------------------------------------------
+
+    def executive_object_exists(
+            self,
+            executive_object):
+
+        self.repository.cursor.execute(
+
+            """
+            SELECT object_id
+
+            FROM executive_objects
+
+            WHERE lower(object_type)=?
+
+            AND lower(title)=?
+            AND lower(plant)=?
+            AND lower(unit)=?
+            AND lower(business_area)=?
+            AND lower(time_period)=?
+            """,
+
+            (
+
+                self.safe_lower(
+                    executive_object.object_type
+                ),
+
+                self.safe_lower(
+                    executive_object.title
+                ),
+
+                self.safe_lower(
+                    executive_object.plant
+                ),
+
+                self.safe_lower(
+                    executive_object.unit
+                ),
+
+                self.safe_lower(
+                    executive_object.business_area
+                ),
+
+                self.safe_lower(
+                    executive_object.time_period
+                )
+
+            )
+
+        )
+
+        row = self.repository.cursor.fetchone()
+
+        if row:
+
+            return True, row["object_id"]
+
+        return False, None
+
+        # ----------------------------------------------------
+    # Save Executive Object
+    # ----------------------------------------------------
+
+    def save_executive_object(
+            self,
+            executive_object):
+
+        exists, object_id = self.executive_object_exists(
+            executive_object
+        )
+
+        # ------------------------------------------------
+        # Existing Object
+        # ------------------------------------------------
+
+        if exists:
+
+            self.update_existing_object(
+                object_id,
+                executive_object
+            )
+
+            return object_id
+
+        # ------------------------------------------------
+        # New Object
+        # ------------------------------------------------
+
+        self.repository.cursor.execute(
+
+            """
+            INSERT INTO executive_objects
+            (
+                object_id,
+                object_type,
+                title,
+                plant,
+                unit,
+                business_area,
+                report_name,
+                page,
+                time_period,
+                commentary,
+                insights,
+                evidence,
+                domain_intelligence,
+                metadata,
+                created_date
+            )
+
+            VALUES
+            (
+                ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?
+            )
+            """,
+
+            (
+
+                executive_object.object_id,
+
+                self.safe_string(
+                    executive_object.object_type
+                ),
+
+                self.safe_string(
+                    executive_object.title
+                ),
+
+                self.safe_string(
+                    executive_object.plant
+                ),
+
+                self.safe_string(
+                    executive_object.unit
+                ),
+
+                self.safe_string(
+                    executive_object.business_area
+                ),
+
+                self.safe_string(
+                    executive_object.report_name
+                ),
+
+                executive_object.page,
+
+                self.safe_string(
+                    executive_object.time_period
+                ),
+
+                json.dumps(
+                    executive_object.commentary
+                ),
+
+                json.dumps(
+                    executive_object.insights
+                ),
+
+                json.dumps(
+                    executive_object.evidence
+                ),
+
+                json.dumps(
+                    executive_object.domain_intelligence
+                ),
+
+                json.dumps(
+                    executive_object.metadata
+                ),
+
+                datetime.now().isoformat()
+
+            )
 
         )
 
@@ -167,154 +270,407 @@ class RepositoryUpdater:
 
         return executive_object.object_id
 
-    # ---------------------------------------------------
-    # SAVE OBSERVATIONS
-    # ---------------------------------------------------
+    # ----------------------------------------------------
+    # Update Existing Executive Object
+    # ----------------------------------------------------
 
-    def save_observations(self,
-                          object_id,
-                          observations):
+    def update_existing_object(
+            self,
+            object_id,
+            executive_object):
 
-        for observation in observations:
+        self.repository.cursor.execute(
 
-            self.repository.cursor.execute("""
+            """
+            UPDATE executive_objects
 
+            SET
+
+                report_name=?,
+
+                page=?,
+
+                commentary=?,
+
+                insights=?,
+
+                evidence=?,
+
+                domain_intelligence=?,
+
+                metadata=?
+
+            WHERE object_id=?
+
+            """,
+
+            (
+
+                self.safe_string(
+                    executive_object.report_name
+                ),
+
+                executive_object.page,
+
+                json.dumps(
+                    executive_object.commentary
+                ),
+
+                json.dumps(
+                    executive_object.insights
+                ),
+
+                json.dumps(
+                    executive_object.evidence
+                ),
+
+                json.dumps(
+                    executive_object.domain_intelligence
+                ),
+
+                json.dumps(
+                    executive_object.metadata
+                ),
+
+                object_id
+
+            )
+
+        )
+
+        self.repository.connection.commit()
+
+        return object_id
+        # ----------------------------------------------------
+    # Observation Exists
+    # ----------------------------------------------------
+
+    def observation_exists(
+            self,
+            observation):
+
+        self.repository.cursor.execute(
+
+            """
             SELECT observation_id
 
             FROM observations
 
-            WHERE metric=?
+            WHERE
+
+                metric=?
 
             AND period=?
-
             AND value=?
-
             AND source_report=?
 
             """,
 
             (
 
-                observation.metric,
+                self.safe_string(
+                    observation.metric
+                ),
 
-                observation.period,
+                self.safe_string(
+                    observation.period
+                ),
 
-                str(observation.value),
+                self.safe_string(
+                    observation.value
+                ),
 
-                observation.source_report
+                self.safe_string(
+                    observation.source_report
+                )
 
             )
 
-            )
+        )
 
-            row = self.repository.cursor.fetchone()
+        row = self.repository.cursor.fetchone()
 
-            if row:
+        if row:
+
+            return True
+
+        return False
+
+    # ----------------------------------------------------
+    # Save Observations
+    # ----------------------------------------------------
+
+    def save_observations(
+            self,
+            object_id,
+            observations):
+
+        inserted = 0
+
+        skipped = 0
+
+        for observation in observations:
+
+            if self.observation_exists(
+                    observation):
+
+                skipped += 1
 
                 continue
 
-            self.repository.cursor.execute("""
+            self.repository.cursor.execute(
 
-            INSERT INTO observations
+                """
+                INSERT INTO observations
+                (
+                    observation_id,
+                    object_id,
+                    metric,
+                    period,
+                    value,
+                    target,
+                    source_report,
+                    source_page,
+                    confidence,
+                    metadata
+                )
 
-            VALUES(?,?,?,?,?,?,?,?,?,?)
+                VALUES
+                (
+                    ?,?,?,?,?,?,?,?,?,?
+                )
+                """,
+
+                (
+
+                    observation.observation_id,
+
+                    object_id,
+
+                    self.safe_string(
+                        observation.metric
+                    ),
+
+                    self.safe_string(
+                        observation.period
+                    ),
+
+                    self.safe_string(
+                        observation.value
+                    ),
+
+                    self.safe_string(
+                        observation.target
+                    ),
+
+                    self.safe_string(
+                        observation.source_report
+                    ),
+
+                    observation.source_page,
+
+                    observation.confidence,
+
+                    json.dumps(
+                        observation.metadata
+                    )
+
+                )
+
+            )
+
+            inserted += 1
+
+        self.repository.connection.commit()
+
+        return {
+
+            "inserted": inserted,
+
+            "duplicates": skipped
+
+        }
+
+    # ----------------------------------------------------
+    # Save Report History
+    # ----------------------------------------------------
+
+    def save_report_history(
+            self,
+            report_name):
+
+        try:
+
+            self.repository.cursor.execute(
+
+                """
+                INSERT INTO report_history
+                (
+                    report_name,
+                    loaded_date
+                )
+
+                VALUES
+                (
+                    ?,?
+                )
+                """,
+
+                (
+
+                    report_name,
+
+                    datetime.now().isoformat()
+
+                )
+
+            )
+
+            self.repository.connection.commit()
+
+        except Exception:
+
+            pass
+
+        # ----------------------------------------------------
+    # Discovery Queue
+    # ----------------------------------------------------
+
+    def save_discovery(
+            self,
+            executive_object):
+
+        title = self.safe_string(
+            executive_object.title
+        )
+
+        if title == "":
+            return
+
+        self.repository.cursor.execute(
+
+            """
+            SELECT id
+
+            FROM discovery_queue
+
+            WHERE lower(title)=?
 
             """,
 
             (
 
-                observation.observation_id,
-
-                object_id,
-
-                observation.metric,
-
-                observation.period,
-
-                str(observation.value),
-
-                str(observation.target),
-
-                observation.source_report,
-
-                observation.source_page,
-
-                observation.confidence,
-
-                json.dumps(observation.metadata)
+                self.safe_lower(title),
 
             )
 
+        )
+
+        if self.repository.cursor.fetchone():
+
+            return
+
+        self.repository.cursor.execute(
+
+            """
+            INSERT INTO discovery_queue
+            (
+
+                title,
+
+                object_type,
+
+                suggested_business_area,
+
+                report_name,
+
+                page,
+
+                confidence,
+
+                status
+
             )
 
-        self.repository.connection.commit()
+            VALUES
 
-    # ---------------------------------------------------
-    # SAVE DISCOVERY
-    # ---------------------------------------------------
+            (
 
-    def save_discovery(self,
-                       title,
-                       object_type,
-                       business_area,
-                       report_name,
-                       page,
-                       confidence):
+                ?,?,?,?,?,?,?
 
-        self.repository.cursor.execute("""
+            )
 
-        INSERT INTO discovery_queue
+            """,
 
-        (
+            (
 
-            title,
+                self.safe_string(
+                    executive_object.title
+                ),
 
-            object_type,
+                self.safe_string(
+                    executive_object.object_type
+                ),
 
-            suggested_business_area,
+                self.safe_string(
+                    executive_object.business_area
+                ),
 
-            report_name,
+                self.safe_string(
+                    executive_object.report_name
+                ),
 
-            page,
+                executive_object.page,
 
-            confidence,
+                1.0,
 
-            status
+                "Pending"
 
-        )
-
-        VALUES(?,?,?,?,?,?,?)
-
-        """,
-
-        (
-
-            title,
-
-            object_type,
-
-            business_area,
-
-            report_name,
-
-            page,
-
-            confidence,
-
-            "Pending"
-
-        )
+            )
 
         )
 
         self.repository.connection.commit()
 
-    # ---------------------------------------------------
-    # MAIN ENTRY
-    # ---------------------------------------------------
+    # ----------------------------------------------------
+    # Repository Statistics
+    # ----------------------------------------------------
 
-    def process_object(self,
-                       executive_object):
+    def repository_statistics(self):
+
+        stats = {}
+
+        tables = [
+
+            "executive_objects",
+
+            "observations",
+
+            "discovery_queue"
+
+        ]
+
+        for table in tables:
+
+            self.repository.cursor.execute(
+
+                f"SELECT COUNT(*) AS cnt FROM {table}"
+
+            )
+
+            row = self.repository.cursor.fetchone()
+
+            stats[table] = row["cnt"]
+
+        return stats
+
+    # ----------------------------------------------------
+    # Process Executive Object
+    # ----------------------------------------------------
+
+    def process_object(
+            self,
+            executive_object):
 
         object_id = self.save_executive_object(
 
@@ -322,7 +678,7 @@ class RepositoryUpdater:
 
         )
 
-        self.save_observations(
+        observation_result = self.save_observations(
 
             object_id,
 
@@ -330,4 +686,62 @@ class RepositoryUpdater:
 
         )
 
-        return object_id
+        self.save_discovery(
+
+            executive_object
+
+        )
+
+        self.save_report_history(
+
+            executive_object.report_name
+
+        )
+
+        return {
+
+            "object_id": object_id,
+
+            "observations": observation_result
+
+        }
+
+    # ----------------------------------------------------
+    # Process Complete Report
+    # ----------------------------------------------------
+
+    def process_report(
+            self,
+            executive_objects):
+
+        summary = {
+
+            "objects_processed": 0,
+
+            "observations_inserted": 0,
+
+            "duplicates": 0
+
+        }
+
+        for obj in executive_objects:
+
+            result = self.process_object(
+
+                obj
+
+            )
+
+            summary["objects_processed"] += 1
+
+            summary["observations_inserted"] += result[
+                "observations"
+            ]["inserted"]
+
+            summary["duplicates"] += result[
+                "observations"
+            ]["duplicates"]
+
+        summary["repository"] = self.repository_statistics()
+
+        return summary
