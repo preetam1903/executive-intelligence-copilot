@@ -78,13 +78,25 @@ uploaded_file = st.file_uploader(
 
 if uploaded_file is not None:
 
-    pdf = fitz.open(
+    try:
 
-        stream=uploaded_file.read(),
+        pdf = fitz.open(
 
-        filetype="pdf"
+            stream=uploaded_file.read(),
 
-    )
+            filetype="pdf"
+
+        )
+
+        st.write("PDF opened successfully")
+
+        st.write("Pages:", pdf.page_count)
+
+    except Exception as e:
+
+        st.error(str(e))
+
+        st.stop()
 
     left, right = st.columns([3, 1])
 
@@ -92,13 +104,16 @@ if uploaded_file is not None:
 
         if pdf.page_count > 0:
 
+            st.write("Page Count:", pdf.page_count)
+            st.write("Type:", type(pdf.page_count))
+
             page_number = st.slider(
 
                 "Page",
 
                 min_value=1,
 
-                max_value=pdf.page_count,
+                max_value=max(1, int(pdf.page_count)),
 
                 value=1
 
