@@ -312,6 +312,73 @@ if st.session_state["analysis_complete"]:
                 result["answer"]
 
             )
+                        # ============================================
+            # AI X-Ray
+            # ============================================
+
+            st.divider()
+
+            st.subheader("🔍 AI X-Ray")
+
+            xray = agent.get_xray()
+
+            summary = xray["summary"]
+
+            c1, c2, c3, c4 = st.columns(4)
+
+            with c1:
+                st.metric("Stages", summary["total_stages"])
+
+            with c2:
+                st.metric("Completed", summary["completed"])
+
+            with c3:
+                st.metric("Failed", summary["failed"])
+
+            with c4:
+                st.metric("Time (ms)", summary["total_time_ms"])
+
+            st.divider()
+
+            for i, stage in enumerate(xray["pipeline"], start=1):
+
+                icon = "🟢"
+
+                if stage["status"] == "Failed":
+                    icon = "🔴"
+
+                elif stage["status"] == "Running":
+                    icon = "🟡"
+
+                with st.expander(f"{icon} Step {i} : {stage['stage']}"):
+
+                    left, right = st.columns(2)
+
+                    with left:
+
+                        st.write("**Status**")
+
+                        st.success(stage["status"])
+
+                        st.write("**Duration**")
+
+                        st.write(f"{stage['duration_ms']} ms")
+
+                    with right:
+
+                        st.write("**Metrics**")
+
+                        st.json(stage["metrics"])
+
+                    if len(stage["notes"]) > 0:
+
+                        st.write("### Notes")
+
+                        for note in stage["notes"]:
+
+                            st.info(note)
+
+            
 
 # ----------------------------------------------------
 # Executive Objects

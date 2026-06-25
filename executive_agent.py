@@ -12,6 +12,7 @@ from normalizer import Normalizer
 from repository_updater import RepositoryUpdater
 from relationship_engine import RelationshipEngine
 from reasoning_engine import ReasoningEngine
+from xray_engine import XRayEngine
 
 
 class ExecutiveAgent:
@@ -48,6 +49,7 @@ class ExecutiveAgent:
         self.relationships = []
 
         self.current_report = None
+        self.xray = XRayEngine()
 
     # ----------------------------------------------------
     # Load Report
@@ -111,19 +113,89 @@ class ExecutiveAgent:
     # Complete Processing Pipeline
     # ----------------------------------------------------
 
+        # ----------------------------------------------------
+    # Complete Processing Pipeline
+    # ----------------------------------------------------
+
     def process_report(
             self,
             uploaded_file):
 
+        self.xray.reset()
+
+        # -------------------------------
+        # Vision + Normalization
+        # -------------------------------
+
+        stage = self.xray.start_stage(
+            "Vision + Normalizer"
+        )
+
         total_objects = self.load_report(
-
             uploaded_file
+        )
 
+        self.xray.add_metric(
+            stage,
+            "Executive Objects",
+            total_objects
+        )
+
+        self.xray.add_metric(
+            stage,
+            "Report",
+            uploaded_file.name
+        )
+
+        self.xray.finish_stage(
+            stage
+        )
+
+        # -------------------------------
+        # Repository
+        # -------------------------------
+
+        stage = self.xray.start_stage(
+            "Knowledge Repository"
         )
 
         repository_summary = self.update_repository()
 
+        self.xray.add_metric(
+            stage,
+            "Objects Saved",
+            repository_summary["objects_processed"]
+        )
+
+        self.xray.add_metric(
+            stage,
+            "Observations Saved",
+            repository_summary["observations_inserted"]
+        )
+
+        self.xray.finish_stage(
+            stage
+        )
+
+        # -------------------------------
+        # Relationship Engine
+        # -------------------------------
+
+        stage = self.xray.start_stage(
+            "Relationship Engine"
+        )
+
         relationship_summary = self.build_relationships()
+
+        self.xray.add_metric(
+            stage,
+            "Relationships",
+            len(self.relationships)
+        )
+
+        self.xray.finish_stage(
+            stage
+        )
 
         return {
 
@@ -141,7 +213,7 @@ class ExecutiveAgent:
 
         }
 
-    # ----------------------------------------------------
+        # ----------------------------------------------------
     # Executive Chat
     # ----------------------------------------------------
 
@@ -149,7 +221,11 @@ class ExecutiveAgent:
             self,
             question):
 
-        return self.reasoning_engine.process(
+        stage = self.xray.start_stage(
+            "Reasoning Engine"
+        )
+
+        result = self.reasoning_engine.process(
 
             question,
 
@@ -158,6 +234,60 @@ class ExecutiveAgent:
             self.relationships
 
         )
+
+        self.xray.add_metric(
+
+            stage,
+
+            "Question",
+
+            question
+
+        )
+
+        self.xray.add_metric(
+
+            stage,
+
+            "Executive Objects Used",
+
+            len(self.executive_objects)
+
+        )
+
+        self.xray.add_metric(
+
+            stage,
+
+            "Relationships Used",
+
+            len(self.relationships)
+
+        )
+
+        self.xray.add_metric(
+
+            stage,
+
+            "Question Type",
+
+            result.get(
+
+                "question_type",
+
+                "Unknown"
+
+            )
+
+        )
+
+        self.xray.finish_stage(
+
+            stage
+
+        )
+
+        return result
 
     # ----------------------------------------------------
     # Repository Statistics
@@ -187,6 +317,14 @@ class ExecutiveAgent:
 
         }
 
+        # ----------------------------------------------------
+    # X-Ray
+    # ----------------------------------------------------
+
+    def get_xray(self):
+
+        return self.xray.export()
+
     # ----------------------------------------------------
     # Reset
     # ----------------------------------------------------
@@ -196,6 +334,7 @@ class ExecutiveAgent:
         self.executive_objects = []
 
         self.relationships = []
+        self.xray.reset()
 
         self.current_report = None
 
