@@ -223,11 +223,30 @@ if uploaded_file is not None:
                         chart["bbox"]
                     )
 
-                    st.image(
-                        chart_image,
-                        caption=chart["header"],
-                        use_container_width=True
+# Crop only the plotting area
+                    plot_image = detector.crop_plot_area(
+                        chart_image
                     )
+
+# Display both images
+                    col1, col2 = st.columns(2)
+
+                    with col1:
+
+                        st.image(
+                            chart_image,
+                            caption="Original Chart",
+                            use_container_width=True
+                        )
+
+                    with col2:
+
+                        st.image(
+                            plot_image,
+                            caption="Detected Plot Area",
+                            use_container_width=True
+                        )
+
                     layout_info = {
 
                         "header": chart["header"],
@@ -243,29 +262,13 @@ if uploaded_file is not None:
                     }
 
                     analysis = analysis_agent.analyze_chart(
-                        chart_image,
+                        plot_image,
                         layout_info
                     )
 
                     st.subheader("Chart Analysis")
 
                     st.json(analysis)
-            st.success(f"Pages detected : {len(pages)}")  
-            result = agent.process_report(
-
-                uploaded_file
-
-            )
-        
-        st.session_state["analysis_complete"] = True
-
-        st.success(
-
-            "Knowledge Repository Created"
-
-        )
-
-        st.json(result)
 
 # ----------------------------------------------------
 # Dashboard
