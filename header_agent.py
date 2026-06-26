@@ -208,6 +208,8 @@ Return ONLY JSON.
         response = self.client.chat.completions.create(
 
             model="gpt-4.1",
+            temperature=0,
+            max_completion_tokens=12000,
 
             messages=[
 
@@ -230,4 +232,10 @@ Return ONLY JSON.
 
         )
 
-        return response.choices[0].message.content
+        result = response.choices[0].message.content.strip()
+
+        result = result.replace("```json", "")
+        result = result.replace("```", "")
+        result = result.strip()
+
+        return result
