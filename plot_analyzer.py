@@ -11,7 +11,9 @@ class PlotAnalyzer:
 
         h, w = gray.shape
 
-        # ---------- Find Bottom Axis ----------
+        # -----------------------------
+        # Find Bottom Axis
+        # -----------------------------
 
         row_scores = []
 
@@ -23,7 +25,9 @@ class PlotAnalyzer:
 
         baseline = int(np.argmax(row_scores))
 
-        # ---------- Find Left Axis ----------
+        # -----------------------------
+        # Find Left Axis
+        # -----------------------------
 
         col_scores = []
 
@@ -35,8 +39,6 @@ class PlotAnalyzer:
 
         left_axis = int(np.argmax(col_scores))
 
-        # ---------- Plot Area ----------
-
         plot = {
 
             "left": left_axis,
@@ -47,22 +49,19 @@ class PlotAnalyzer:
 
             "bottom": baseline,
 
-            "width": w - left_axis,
+            "width": (w - 1) - left_axis,
 
             "height": baseline
 
         }
 
-                # -----------------------------
-        # Find X Axis
+        # -----------------------------
+        # Refine X Axis
         # -----------------------------
 
         x_axis = baseline
 
-        for y in range(baseline, baseline - 40, -1):
-
-            if y < 0:
-                break
+        for y in range(baseline, max(baseline - 40, 0), -1):
 
             dark = np.sum(gray[y] < 120)
 
@@ -75,3 +74,70 @@ class PlotAnalyzer:
         plot["x_axis"] = x_axis
 
         return plot
+
+    def detect_bar_centers(self, pil_image, plot):
+
+        img = np.array(pil_image)
+
+        gray = img.mean(axis=2)
+
+        left = plot["left"]
+
+        right = plot["right"]
+
+        bottom = plot["x_axis"]
+
+        scan_height = 60
+
+        histogram = []
+
+        for x in range(left, right):
+
+            dark = 0
+
+            for y in range(max(bottom - scan_height, 0), bottom):
+
+                if gray[y, x] < 170:
+
+                    dark += 1
+
+            histogram.append(dark)
+
+        centers = []
+
+        inside = False
+
+        start = 0
+
+        for i, value in enumerate(histogram):
+
+            if value > 8:
+
+                if not inside:
+
+                    start = i
+
+                    inside = True
+
+            else:
+
+                if inside:
+
+                    end = i
+
+                    center = left + (start + end) // 2
+
+                    centers.append(center)
+
+                    inside = False
+
+        # Handle final bar reaching image edge
+        if inside:
+
+            end = len(histogram) - 1
+
+            center = left + (start + end) // 2
+
+            centers.append(center)
+
+        return centers
