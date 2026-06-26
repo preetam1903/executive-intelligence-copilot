@@ -92,8 +92,10 @@ class RepositoryUpdater:
     # ----------------------------------------------------
 
     def executive_object_exists(
-            self,
-            executive_object):
+        self,
+        executive_object):
+
+    try:
 
         self.repository.cursor.execute(
 
@@ -148,6 +150,16 @@ class RepositoryUpdater:
             return True, row["object_id"]
 
         return False, None
+
+    except Exception as ex:
+
+        print("=" * 80)
+        print("EXECUTIVE OBJECT EXISTS ERROR")
+        print(type(ex))
+        print(ex)
+        print("=" * 80)
+
+        raise
 
         # ----------------------------------------------------
     # Save Executive Object
