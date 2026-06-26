@@ -24,8 +24,25 @@ class ChartAnalysisAgent:
 
     def analyze_chart(self, chart_image, layout_json):
 
-        image_base64 = self.image_to_base64(chart_image)
+        #image_base64 = self.image_to_base64(chart_image)
+        # Increase resolution before sending to GPT
 
+        chart_image = chart_image.resize(
+
+            (
+                chart_image.width * 3,
+                chart_image.height * 3
+            ),
+
+            Image.Resampling.LANCZOS
+
+        )
+
+        image_base64 = self.image_to_base64(chart_image)
+        print("=" * 80)
+        print("Chart Size")
+        print(chart_image.size)
+        print("=" * 80)
         example_json = """
 {
     "series":[
