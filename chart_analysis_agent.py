@@ -137,60 +137,58 @@ Example
 
 
 
-                response = self.client.chat.completions.create(
+                
+        response = self.client.chat.completions.create(
 
-                    model="gpt-4.1",
+            model="gpt-4.1",
 
-                    temperature=0.1,
+            temperature=0.1,
 
-                    max_completion_tokens=4000,
+            max_completion_tokens=4000,
 
-                    messages=[
+            messages=[
+
+                {
+                    "role": "user",
+                    "content": [
 
                         {
-                            "role": "user",
-                            "content": [
+                            "type": "text",
+                            "text": prompt
+                        },
 
-                                {
-                                    "type": "text",
-                                    "text": prompt
-                                },
-
-                                {
-                                    "type": "image_url",
-                                    "image_url": {
-                                        "url": f"data:image/png;base64,{image_base64}"
-                                    }
-                                }
-
-                            ]
+                        {
+                            "type": "image_url",
+                            "image_url": {
+                                "url": f"data:image/png;base64,{image_base64}"
+                            }
                         }
 
                     ]
+                }
 
-                )
+            ]
 
-                result = response.choices[0].message.content.strip()
+        )
 
-                result = result.replace("```json", "")
-                result = result.replace("```", "")
-                result = result.strip()
+        result = response.choices[0].message.content.strip()
 
-                try:
+        result = result.replace("```json", "")
+        result = result.replace("```", "")
+        result = result.strip()
 
-                    json.loads(result)
+        try:
 
-                    return result
+            json.loads(result)
 
-                except Exception as e:
+            return result
 
-                    print("Invalid JSON returned by GPT")
-                    print(result)
+        except Exception:
 
-                    return json.dumps(
-                        {
-                            "error": "Invalid JSON returned",
-                            "raw_response": result
-                        },
-                        indent=4
-                    )
+            return json.dumps(
+                {
+                    "error": "Invalid JSON returned",
+                    "raw_response": result
+                },
+                indent=4
+            )
