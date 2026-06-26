@@ -1,4 +1,3 @@
-import cv2
 import numpy as np
 
 
@@ -6,54 +5,75 @@ class BarExtractor:
 
     def detect_bars(self, pil_image):
 
-        image = cv2.cvtColor(
-            np.array(pil_image),
-            cv2.COLOR_RGB2BGR
-        )
+        img = np.array(pil_image)
 
-        gray = cv2.cvtColor(
-            image,
-            cv2.COLOR_BGR2GRAY
-        )
+        height, width = img.shape[:2]
 
-        _, thresh = cv2.threshold(
-            gray,
-            240,
-            255,
-            cv2.THRESH_BINARY_INV
-        )
+        gray = img.mean(axis=2)
 
-        contours, _ = cv2.findContours(
-            thresh,
-            cv2.RETR_EXTERNAL,
-            cv2.CHAIN_APPROX_SIMPLE
-        )
+        threshold = 235
 
         bars = []
 
-        for contour in contours:
+        in_bar = False
 
-            x, y, w, h = cv2.boundingRect(contour)
+        start_x = 0
 
-            if h < 20:
-                continue
+        for x in range(width):
 
-            if w < 4:
-                continue
+            column = gray[:, x]
 
-            if h < w:
-                continue
+            dark_pixels = np.sum(column < threshold)
 
-            bars.append({
-                "x": x,
-                "y": y,
-                "width": w,
-                "height": h
-            })
+            if dark_pixels > 20:
 
-        bars = sorted(
-            bars,
-            key=lambda b: b["x"]
-        )
+                if not in_bar:
+
+                    start_x = x
+
+                    in_bar = True
+
+            else:
+
+                if in_bar:
+
+                    end_x = x
+
+                    center = (start_x + end_x) // 2
+
+                    top = height
+
+                    bottom = 0
+
+                    for xx in range(start_x, end_x):
+
+                        ys = np.where(gray[:, xx] < threshold)[0]
+
+                        if len(ys) == 0:
+                            continue
+
+                        top = min(top, ys.min())
+
+                        bottom = max(bottom, ys.max())
+
+                    if bottom - top > 20:
+
+                        bars.append({
+
+                            "center_x": center,
+
+                            "left": start_x,
+
+                            "right": end_x,
+
+                            "top": int(top),
+
+                            "bottom": int(bottom),
+
+                            "height_pixels": int(bottom - top)
+
+                        })
+
+                    in_bar = False
 
         return bars
