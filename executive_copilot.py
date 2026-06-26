@@ -194,6 +194,8 @@ if uploaded_file is not None:
             detector = ChartDetector()
 
             pages = detector.convert_pdf_to_images(uploaded_file)
+            uploaded_file.seek(0)
+            
             header_agent = HeaderAgent(st.secrets["OPENAI_API_KEY"])
 
             for page_no, page in enumerate(pages):

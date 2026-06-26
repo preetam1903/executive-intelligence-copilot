@@ -15,7 +15,9 @@ class ChartDetector:
 
     def convert_pdf_to_images(self, pdf_path):
 
-        doc = fitz.open(pdf_path)
+        pdf_bytes = pdf_path.read()
+
+        doc = fitz.open(stream=pdf_bytes, filetype="pdf")
 
         pages = []
 
