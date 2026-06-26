@@ -3,6 +3,7 @@ import fitz
 
 from knowledge_repository import RepositoryManager
 from executive_agent import ExecutiveAgent
+from chart_detector import ChartDetector
 
 
 # ----------------------------------------------------
@@ -189,7 +190,19 @@ if uploaded_file is not None:
             "Analyzing report..."
 
         ):
+            detector = ChartDetector()
 
+            pages = detector.convert_pdf_to_images(uploaded_file)
+
+            st.success(f"Pages detected : {len(pages)}")
+            for page_index, page in enumerate(pages):
+
+                st.subheader(f"Page {page_index + 1}")
+
+                charts = detector.detect_chart_regions(page)
+
+                st.write(f"Charts Found : {len(charts)}")
+                
             result = agent.process_report(
 
                 uploaded_file
