@@ -276,6 +276,8 @@ if uploaded_file is not None:
                     st.subheader("Detected Plot")
 
                     st.json(plot)
+                    st.write("Plot Height :", plot["height"])
+                    st.write("X Axis :", plot["x_axis"])
 
                     st.subheader("Detected Bars")
 

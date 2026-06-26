@@ -53,4 +53,25 @@ class PlotAnalyzer:
 
         }
 
+                # -----------------------------
+        # Find X Axis
+        # -----------------------------
+
+        x_axis = baseline
+
+        for y in range(baseline, baseline - 40, -1):
+
+            if y < 0:
+                break
+
+            dark = np.sum(gray[y] < 120)
+
+            if dark > plot["width"] * 0.60:
+
+                x_axis = y
+
+                break
+
+        plot["x_axis"] = x_axis
+
         return plot
