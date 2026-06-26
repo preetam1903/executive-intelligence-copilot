@@ -127,20 +127,39 @@ Return JSON in this exact format.
 
 IMPORTANT
 
+Every chart MUST contain an "observations" array.
+
+Create ONE observation for EVERY visible data point.
+
 Every item inside "observations" MUST be a JSON object.
 
-Never return strings.
-
-Never return numbers.
-
-Never return arrays of values.
-
-Each observation must contain:
+Each observation MUST contain:
 
 metric
 period
 value
 target
+
+Example:
+
+{
+    "metric": "Production",
+    "period": "Week 1",
+    "value": "94",
+    "target": "100"
+}
+
+If a chart has 6 bars, return 6 observations.
+
+If a chart has 12 months, return 12 observations.
+
+If a chart has Actual and Target, populate the target field.
+
+Do NOT summarize numerical values.
+
+Extract every visible number from the chart.
+
+
 For charts extract:
 
 Title
