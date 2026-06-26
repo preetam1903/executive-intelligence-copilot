@@ -6,6 +6,7 @@ from executive_agent import ExecutiveAgent
 from chart_detector import ChartDetector
 from header_agent import HeaderAgent
 from chart_analysis_agent import ChartAnalysisAgent
+from plot_detector import PlotDetector
 
 # ----------------------------------------------------
 # Streamlit
@@ -192,6 +193,7 @@ if uploaded_file is not None:
 
         ):
             detector = ChartDetector()
+            plot_detector = PlotDetector()
 
             pages = detector.convert_pdf_to_images(uploaded_file)
             uploaded_file.seek(0)
@@ -224,7 +226,7 @@ if uploaded_file is not None:
                     )
 
 # Crop only the plotting area
-                    plot_image = detector.crop_plot_area(
+                    plot_image = plot_detector.detect_plot_area(
                         chart_image
                     )
 
