@@ -222,7 +222,19 @@ if uploaded_file is not None:
 
                 st.code(headers_json)
 
-                charts = json.loads(headers_json)
+                st.subheader("Raw Header JSON")
+
+                st.code(headers_json)
+
+                try:
+
+                    charts = json.loads(headers_json)
+
+                except Exception as e:
+
+                    st.error(e)
+
+                    st.stop()
 
                 for chart in charts:
 
@@ -276,7 +288,7 @@ if uploaded_file is not None:
                     st.subheader("Detected Plot")
 
                     st.json(plot)
-                    label_count = len(chart["x_axis"]["labels"])
+                    label_count = len(layout_info["x_axis"]["labels"])
 
                     centers = plot_analyzer.compute_expected_bar_positions(
                         plot,
