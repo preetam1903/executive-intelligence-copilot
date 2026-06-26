@@ -9,6 +9,7 @@ from chart_analysis_agent import ChartAnalysisAgent
 #from plot_detector import PlotDetector
 from bar_extractor import BarExtractor
 from plot_analyzer import PlotAnalyzer
+from stacked_bar_extractor import StackedBarExtractor
 # ----------------------------------------------------
 # Streamlit
 # ----------------------------------------------------
@@ -205,6 +206,7 @@ if uploaded_file is not None:
             )
             bar_extractor = BarExtractor()
             plot_analyzer = PlotAnalyzer()
+            stack_extractor = StackedBarExtractor()
 
             
 
@@ -298,6 +300,21 @@ if uploaded_file is not None:
                     st.subheader("Detected Bar Centers")
 
                     st.write(centers)
+                    heights = []
+
+                    for center in centers:
+
+                        h = stack_extractor.measure_total_height(
+                            chart_image,
+                            center,
+                            plot["x_axis"]
+                        )
+
+                        heights.append(h)
+
+                    st.subheader("Measured Heights")
+
+                    st.write(heights)
 
                     st.write("Total Bars :", len(centers))
                     st.write("Plot Height :", plot["height"])
