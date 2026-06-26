@@ -7,6 +7,7 @@ from chart_detector import ChartDetector
 from header_agent import HeaderAgent
 from chart_analysis_agent import ChartAnalysisAgent
 #from plot_detector import PlotDetector
+from bar_extractor import BarExtractor
 
 # ----------------------------------------------------
 # Streamlit
@@ -202,6 +203,7 @@ if uploaded_file is not None:
             analysis_agent = ChartAnalysisAgent(
                 st.secrets["OPENAI_API_KEY"]
             )
+            bar_extractor = BarExtractor()
 
             
 
@@ -265,10 +267,13 @@ if uploaded_file is not None:
                     st.write("Layout Sent To GPT")
 
                     st.json(layout_info)
-                    analysis = analysis_agent.analyze_chart(
-                        chart_image,
-                        layout_info
+                    bars = bar_extractor.detect_bars(
+                        chart_image
                     )
+
+                    st.subheader("Detected Bars")
+
+                    st.json(bars)
 
                     st.subheader("Chart Analysis")
 
