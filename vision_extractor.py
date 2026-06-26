@@ -249,11 +249,19 @@ Return only JSON.
 
         )
 
-        return json.loads(
+        result = json.loads(
 
             response.choices[0].message.content
 
         )
+    
+        print("=" * 80)
+        print("VISION OUTPUT")
+        print("=" * 80)
+        print(json.dumps(result, indent=2))
+        print("=" * 80)
+
+        return result
 
     # ---------------------------------------------------------
     # Process Complete PDF
