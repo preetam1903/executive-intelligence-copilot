@@ -75,68 +75,20 @@ class PlotAnalyzer:
 
         return plot
 
-    def detect_bar_centers(self, pil_image, plot):
-
-        img = np.array(pil_image)
-
-        gray = img.mean(axis=2)
+    def compute_expected_bar_positions(self, plot, number_of_labels):
 
         left = plot["left"]
-
         right = plot["right"]
 
-        bottom = plot["x_axis"]
+        width = right - left
 
-        scan_height = 60
-
-        histogram = []
-
-        for x in range(left, right):
-
-            dark = 0
-
-            for y in range(max(bottom - scan_height, 0), bottom):
-
-                if gray[y, x] < 170:
-
-                    dark += 1
-
-            histogram.append(dark)
+        spacing = width / number_of_labels
 
         centers = []
 
-        inside = False
+        for i in range(number_of_labels):
 
-        start = 0
-
-        for i, value in enumerate(histogram):
-
-            if value > 8:
-
-                if not inside:
-
-                    start = i
-
-                    inside = True
-
-            else:
-
-                if inside:
-
-                    end = i
-
-                    center = left + (start + end) // 2
-
-                    centers.append(center)
-
-                    inside = False
-
-        # Handle final bar reaching image edge
-        if inside:
-
-            end = len(histogram) - 1
-
-            center = left + (start + end) // 2
+            center = int(left + (i + 0.5) * spacing)
 
             centers.append(center)
 
