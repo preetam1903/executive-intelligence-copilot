@@ -276,9 +276,11 @@ if uploaded_file is not None:
                     st.subheader("Detected Plot")
 
                     st.json(plot)
-                    centers = plot_analyzer.detect_bar_centers(
-                        chart_image,
-                        plot
+                    label_count = len(chart["x_axis"]["labels"])
+
+                    centers = plot_analyzer.compute_expected_bar_positions(
+                        plot,
+                        label_count
                     )
 
                     st.subheader("Detected Bar Centers")
