@@ -276,6 +276,16 @@ if uploaded_file is not None:
                     st.subheader("Detected Plot")
 
                     st.json(plot)
+                    centers = plot_analyzer.detect_bar_centers(
+                        chart_image,
+                        plot
+                    )
+
+                    st.subheader("Detected Bar Centers")
+
+                    st.write(centers)
+
+                    st.write("Total Bars :", len(centers))
                     st.write("Plot Height :", plot["height"])
                     st.write("X Axis :", plot["x_axis"])
 
