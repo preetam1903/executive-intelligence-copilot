@@ -469,6 +469,7 @@ if st.session_state["analysis_complete"]:
 
                 )
 
+            
             if obj.observations:
 
                 st.write(
@@ -484,22 +485,8 @@ if st.session_state["analysis_complete"]:
                         vars(obs)
 
                     )
-            if obj.observations:
 
-    st.write(
-
-        "**Observations**"
-
-    )
-
-    for obs in obj.observations:
-
-        st.json(
-
-            vars(obs)
-
-        )
-
+    
             st.write("RAW OBJECT")
 
             st.json(vars(obj))
