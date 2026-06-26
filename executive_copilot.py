@@ -5,7 +5,7 @@ from knowledge_repository import RepositoryManager
 from executive_agent import ExecutiveAgent
 from chart_detector import ChartDetector
 from header_agent import HeaderAgent
-
+from chart_analysis_agent import ChartAnalysisAgent
 
 # ----------------------------------------------------
 # Streamlit
@@ -197,6 +197,9 @@ if uploaded_file is not None:
             uploaded_file.seek(0)
             
             header_agent = HeaderAgent(st.secrets["OPENAI_API_KEY"])
+            analysis_agent = ChartAnalysisAgent(
+                st.secrets["OPENAI_API_KEY"]
+            )
 
             
 
@@ -225,6 +228,28 @@ if uploaded_file is not None:
                         caption=chart["header"],
                         use_container_width=True
                     )
+                    layout_info = {
+
+                        "header": chart["header"],
+
+                        "chart_type": chart["chart_type"],
+
+                        "legend": chart["structure"]["legend"],
+
+                        "x_axis": chart["structure"]["x_axis"],
+
+                        "y_axis": chart["structure"]["y_axis"]
+
+                    }
+
+                    analysis = analysis_agent.analyze_chart(
+                        chart_image,
+                        layout_info
+                    )
+
+                    st.subheader("Chart Analysis")
+
+                    st.json(analysis)
             st.success(f"Pages detected : {len(pages)}")  
             result = agent.process_report(
 
