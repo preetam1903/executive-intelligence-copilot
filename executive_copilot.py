@@ -6,7 +6,7 @@ from executive_agent import ExecutiveAgent
 from chart_detector import ChartDetector
 from header_agent import HeaderAgent
 from chart_analysis_agent import ChartAnalysisAgent
-from plot_detector import PlotDetector
+#from plot_detector import PlotDetector
 
 # ----------------------------------------------------
 # Streamlit
@@ -226,28 +226,16 @@ if uploaded_file is not None:
                     )
 
 # Crop only the plotting area
-                    plot_image = plot_detector.detect_plot_area(
-                        chart_image
-                    )
+                    #plot_image = plot_detector.detect_plot_area(
+                        #chart_image
+                    #)
 
 # Display both images
-                    col1, col2 = st.columns(2)
-
-                    with col1:
-
-                        st.image(
-                            chart_image,
-                            caption="Original Chart",
-                            use_container_width=True
-                        )
-
-                    with col2:
-
-                        st.image(
-                            plot_image,
-                            caption="Detected Plot Area",
-                            use_container_width=True
-                        )
+                    st.image(
+                        chart_image,
+                        caption=chart["header"],
+                        use_container_width=True
+                    )
 
                     layout_info = {
 
@@ -264,7 +252,7 @@ if uploaded_file is not None:
                     }
 
                     analysis = analysis_agent.analyze_chart(
-                        plot_image,
+                        chart_image,
                         layout_info
                     )
 

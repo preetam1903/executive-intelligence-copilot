@@ -58,6 +58,19 @@ class ChartDetector:
 
         left, top, right, bottom = bbox
 
+        width = page_image.width
+        height = page_image.height
+
+        # Expand the detected box
+        padding_x = 40
+        padding_y = 40
+
+        left = max(0, left - padding_x)
+        top = max(0, top - padding_y)
+
+        right = min(width, right + padding_x)
+        bottom = min(height, bottom + padding_y)
+
         return page_image.crop(
             (
                 left,
@@ -66,23 +79,4 @@ class ChartDetector:
                 bottom
             )
         )
-    def crop_plot_area(self, chart_image):
-
-        width, height = chart_image.size
-
-        left = int(width * PLOT_CROP["left"])
-
-        right = int(width * PLOT_CROP["right"])
-
-        top = int(height * PLOT_CROP["top"])
-
-        bottom = int(height * PLOT_CROP["bottom"])
-
-        return chart_image.crop(
-            (
-                left,
-                top,
-                right,
-                bottom
-            )
-        )
+    

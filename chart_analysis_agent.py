@@ -27,85 +27,126 @@ class ChartAnalysisAgent:
         image_base64 = self.image_to_base64(chart_image)
 
         prompt = f"""
-You are an Enterprise Chart Analysis Agent.
+You are a Senior Business Intelligence Chart Analyst.
 
-The chart layout has already been identified.
+Your ONLY responsibility is to extract chart values.
 
-DO NOT detect:
+The chart structure has already been detected.
 
+Do NOT detect:
 - Chart Type
 - Legend
-- Axis
+- X Axis
+- Y Axis
 - Units
 
-Use the metadata below.
+These are already known.
 
-Chart Metadata
+==================================================
+
+CHART METADATA
 
 {json.dumps(layout_json, indent=2)}
 
-------------------------------------------------
+==================================================
 
-Your ONLY task is to extract numerical values.
+IMPORTANT
 
-Instructions
+Ignore:
 
-1. Read every visible data series.
+- Chart title
+- Chart number
+- White margins
+- Legend area
+- Decorative elements
 
-2. Return every point.
+Focus ONLY on the plotted data region.
 
-3. If a value cannot be read exactly,
-estimate it using the Y-axis.
+==================================================
 
-4. Every value must contain:
+YOUR TASK
+
+Read every plotted value.
+
+If it is a Bar chart:
+- Detect every bar
+- Read every bar height
+- Convert height to actual value using the Y-axis scale
+
+If it is a Grouped Bar:
+- Read every bar for every series
+- Keep series separate
+
+If it is a Stacked Bar:
+- Read every coloured stack independently
+- Return each stack value
+- Return stack total if visible
+
+If it is a Line chart:
+- Read every point
+
+If it is a Scatter chart:
+- Read every point coordinate
+
+==================================================
+
+Rules
+
+Never invent values.
+
+If uncertain,
+estimate using the Y-axis.
+
+Every value must contain
 
 - x
 - y
 - confidence
 - extraction_method
 
-5. Confidence should be between 0 and 100.
+Confidence
 
-6. extraction_method should be one of
+100 = exact label
 
-- Data Label
-- Bar Height
-- Line Position
-- Scatter Position
-- Estimated from Axis
+95 = accurate visual reading
 
-Return ONLY valid JSON.
+80 = estimated
+
+60 = uncertain
+
+Below 60
+
+Do NOT guess.
+
+==================================================
+
+Return ONLY JSON.
 
 Example
 
-{{
-    "series":[
-        {{
-            "name":"Actual",
-            "points":[
-                {{
-                    "x":"2023-W01",
-                    "y":92,
-                    "confidence":98,
-                    "extraction_method":"Bar Height"
-                }},
-                {{
-                    "x":"2023-W02",
-                    "y":95,
-                    "confidence":97,
-                    "extraction_method":"Bar Height"
-                }}
-            ]
-        }}
-    ]
-}}
+{
+  "series":[
+    {
+      "name":"Actual",
+      "points":[
+        {
+          "x":"2023-W01",
+          "y":95,
+          "confidence":97,
+          "extraction_method":"Bar Height"
+        }
+      ]
+    }
+  ]
+}
 """
+
 
         response = self.client.chat.completions.create(
 
             model="gpt-4.1",
 
-            temperature=0,
+            temperature=0.1,
 
             messages=[
 
