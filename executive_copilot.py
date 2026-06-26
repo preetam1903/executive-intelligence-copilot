@@ -198,29 +198,40 @@ if uploaded_file is not None:
             
             header_agent = HeaderAgent(st.secrets["OPENAI_API_KEY"])
 
-            for page_no, page in enumerate(pages):
+            
 
-                st.subheader(f"Page {page_no + 1}")
+            
+            import json
 
-                headers = header_agent.detect_headers(page)
-
-                st.json(headers)
-
-            st.success(f"Pages detected : {len(pages)}")
             for page_index, page in enumerate(pages):
 
                 st.subheader(f"Page {page_index + 1}")
 
-                charts = detector.detect_chart_regions(page)
+                headers_json = header_agent.detect_headers(page)
 
-                st.write("Chart Detection Engine : Ready")
-                
+                st.json(headers_json)
+
+                charts = json.loads(headers_json)
+
+                for chart in charts:
+
+                    chart_image = detector.crop_chart(
+                        page,
+                        chart["bbox"]
+                    )
+
+                    st.image(
+                        chart_image,
+                        caption=chart["header"],
+                        use_container_width=True
+                    )
+            st.success(f"Pages detected : {len(pages)}")  
             result = agent.process_report(
 
                 uploaded_file
 
             )
-
+        
         st.session_state["analysis_complete"] = True
 
         st.success(
