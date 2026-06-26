@@ -8,7 +8,7 @@ from header_agent import HeaderAgent
 from chart_analysis_agent import ChartAnalysisAgent
 #from plot_detector import PlotDetector
 from bar_extractor import BarExtractor
-
+from plot_analyzer import PlotAnalyzer
 # ----------------------------------------------------
 # Streamlit
 # ----------------------------------------------------
@@ -204,6 +204,7 @@ if uploaded_file is not None:
                 st.secrets["OPENAI_API_KEY"]
             )
             bar_extractor = BarExtractor()
+            plot_analyzer = PlotAnalyzer()
 
             
 
@@ -270,6 +271,11 @@ if uploaded_file is not None:
                     bars = bar_extractor.detect_bars(
                         chart_image
                     )
+                    plot = plot_analyzer.analyze(chart_image)
+
+                    st.subheader("Detected Plot")
+
+                    st.json(plot)
 
                     st.subheader("Detected Bars")
 
