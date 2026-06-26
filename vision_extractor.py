@@ -254,12 +254,10 @@ Return only JSON.
             response.choices[0].message.content
 
         )
-    
-        print("=" * 80)
-        print("VISION OUTPUT")
-        print("=" * 80)
-        print(json.dumps(result, indent=2))
-        print("=" * 80)
+
+        with open("vision_output.json", "w") as f:
+
+            json.dump(result, f, indent=4)
 
         return result
 
