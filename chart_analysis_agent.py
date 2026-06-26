@@ -26,89 +26,98 @@ class ChartAnalysisAgent:
 
         image_base64 = self.image_to_base64(chart_image)
 
+        example_json = """
+{
+    "series":[
+        {
+            "name":"Actual",
+            "points":[
+                {
+                    "x":"2023-W01",
+                    "y":95,
+                    "confidence":97,
+                    "extraction_method":"Bar Height"
+                },
+                {
+                    "x":"2023-W02",
+                    "y":98,
+                    "confidence":95,
+                    "extraction_method":"Bar Height"
+                }
+            ]
+        }
+    ]
+}
+"""
+
         prompt = f"""
-You are a Senior Business Intelligence Chart Analyst.
+You are a Senior Enterprise Chart Analysis Agent.
 
-Your ONLY responsibility is to extract chart values.
+The dashboard layout has already been analysed.
 
-The chart structure has already been detected.
-
-Do NOT detect:
-- Chart Type
-- Legend
-- X Axis
-- Y Axis
-- Units
-
-These are already known.
-
-==================================================
-
-CHART METADATA
+The following information is already known.
 
 {json.dumps(layout_json, indent=2)}
 
-==================================================
+------------------------------------------------
 
-IMPORTANT
+Ignore
 
-Ignore:
-
+- Dashboard title
 - Chart title
-- Chart number
+- Legend
 - White margins
-- Legend area
 - Decorative elements
 
-Focus ONLY on the plotted data region.
+Focus ONLY on the plotted data.
 
-==================================================
+------------------------------------------------
 
-YOUR TASK
+If chart_type is
 
-Read every plotted value.
+Bar
 
-If it is a Bar chart:
-- Detect every bar
-- Read every bar height
-- Convert height to actual value using the Y-axis scale
+Read every bar.
 
-If it is a Grouped Bar:
-- Read every bar for every series
-- Keep series separate
+Grouped Bar
 
-If it is a Stacked Bar:
-- Read every coloured stack independently
-- Return each stack value
-- Return stack total if visible
+Read every series separately.
 
-If it is a Line chart:
-- Read every point
+Stacked Bar
 
-If it is a Scatter chart:
-- Read every point coordinate
+Read every coloured stack separately.
 
-==================================================
+Line
+
+Read every point.
+
+Scatter
+
+Read every point coordinate.
+
+------------------------------------------------
 
 Rules
 
 Never invent values.
 
-If uncertain,
-estimate using the Y-axis.
+Estimate only when necessary.
 
-Every value must contain
+Every extracted value must contain
 
-- x
-- y
-- confidence
-- extraction_method
+x
+
+y
+
+confidence
+
+extraction_method
 
 Confidence
 
-100 = exact label
+100 = exact
 
-95 = accurate visual reading
+95 = visual
 
 80 = estimated
 
@@ -116,61 +125,72 @@ Confidence
 
 Below 60
 
-Do NOT guess.
+Do not guess.
 
-==================================================
-
-Return ONLY JSON.
+Return ONLY valid JSON.
 
 Example
 
-{
-  "series":[
-    {
-      "name":"Actual",
-      "points":[
-        {
-          "x":"2023-W01",
-          "y":95,
-          "confidence":97,
-          "extraction_method":"Bar Height"
-        }
-      ]
-    }
-  ]
-}
+{example_json}
 """
 
 
-        response = self.client.chat.completions.create(
 
-            model="gpt-4.1",
 
-            temperature=0.1,
+                response = self.client.chat.completions.create(
 
-            messages=[
+                    model="gpt-4.1",
 
-                {
-                    "role": "user",
-                    "content": [
+                    temperature=0.1,
 
-                        {
-                            "type": "text",
-                            "text": prompt
-                        },
+                    max_completion_tokens=4000,
+
+                    messages=[
 
                         {
-                            "type": "image_url",
-                            "image_url": {
-                                "url": f"data:image/png;base64,{image_base64}"
-                            }
+                            "role": "user",
+                            "content": [
+
+                                {
+                                    "type": "text",
+                                    "text": prompt
+                                },
+
+                                {
+                                    "type": "image_url",
+                                    "image_url": {
+                                        "url": f"data:image/png;base64,{image_base64}"
+                                    }
+                                }
+
+                            ]
                         }
 
                     ]
-                }
 
-            ]
+                )
 
-        )
+                result = response.choices[0].message.content.strip()
 
-        return response.choices[0].message.content
+                result = result.replace("```json", "")
+                result = result.replace("```", "")
+                result = result.strip()
+
+                try:
+
+                    json.loads(result)
+
+                    return result
+
+                except Exception as e:
+
+                    print("Invalid JSON returned by GPT")
+                    print(result)
+
+                    return json.dumps(
+                        {
+                            "error": "Invalid JSON returned",
+                            "raw_response": result
+                        },
+                        indent=4
+                    )

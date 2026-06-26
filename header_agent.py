@@ -228,7 +228,7 @@ Return ONLY JSON.
 
             ],
 
-            temperature=0
+            
 
         )
 
