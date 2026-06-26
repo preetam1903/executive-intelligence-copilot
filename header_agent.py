@@ -20,72 +20,143 @@ class HeaderAgent:
         image_b64 = self._image_to_base64(page_image)
 
         prompt = """
-You are an Enterprise Dashboard Layout Detection Engine.
+You are an Enterprise Dashboard Layout Intelligence Engine.
 
-Analyze this dashboard page.
+Analyze every chart on this dashboard page.
 
-For EVERY chart identify:
-
-1. Header
-2. Chart Type
-3. Bounding Box
-   [left, top, right, bottom]
-4. Confidence (0-100)
-
-Now analyse the chart structure.
-
-For each item return one of:
-
-Present
-Missing
-Not Applicable
-Low Confidence
-
-Check:
-
-- Header
-- Legend
-- X Axis Title
-- X Axis Labels
-- Y Axis Title
-- Y Axis Labels
-- Units
-- Target Line
-- Threshold Line
-- Data Labels
-
-Do NOT guess.
-
-If an item is unclear, return Low Confidence.
+For every chart return ALL structural information that can be identified.
 
 Return ONLY valid JSON.
+
+For each chart return:
+
+{
+    "header":"",
+    "chart_type":"",
+    "bbox":[left,top,right,bottom],
+    "confidence":99,
+
+    "structure":{
+
+        "legend":[
+            {
+                "colour":"",
+                "meaning":""
+            }
+        ],
+
+        "x_axis":{
+            "title":"",
+            "labels":[]
+        },
+
+        "y_axis":{
+            "title":"",
+            "unit":"",
+            "minimum":"",
+            "maximum":"",
+            "interval":""
+        },
+
+        "target_line":{
+            "present":true,
+            "label":"",
+            "value":"",
+            "colour":""
+        },
+
+        "threshold_line":{
+            "present":false,
+            "label":"",
+            "value":""
+        },
+
+        "data_labels":{
+            "present":false
+        }
+    },
+
+    "clarification_required":[
+
+    ]
+}
+
+Rules
+
+1. Extract actual values instead of saying Present.
+
+2. If something cannot be determined confidently, leave it blank.
+
+3. If clarification is needed, add a question inside clarification_required.
 
 Example
 
 [
 {
 "header":"Production Volume vs Target",
+
 "chart_type":"Grouped Bar",
+
 "bbox":[120,180,760,540],
+
 "confidence":99,
+
 "structure":{
-"header":"Present",
-"legend":"Present",
-"x_axis_title":"Present",
-"x_axis_labels":"Present",
-"y_axis_title":"Missing",
-"y_axis_labels":"Present",
-"units":"Present",
-"target_line":"Present",
-"threshold":"Not Applicable",
-"data_labels":"Missing"
+
+"legend":[
+{
+"colour":"Blue",
+"meaning":"Actual"
+},
+{
+"colour":"Green",
+"meaning":"Target"
 }
+],
+
+"x_axis":{
+"title":"Production Week",
+"labels":["W1","W2","W3","W4"]
+},
+
+"y_axis":{
+"title":"Production",
+"unit":"KBOE",
+"minimum":"0",
+"maximum":"120",
+"interval":"20"
+},
+
+"target_line":{
+"present":true,
+"label":"Target",
+"value":"",
+"colour":"Red"
+},
+
+"threshold_line":{
+"present":false,
+"label":"",
+"value":""
+},
+
+"data_labels":{
+"present":false
 }
+
+},
+
+"clarification_required":[
+
+]
+
+}
+
 ]
 
 Do not explain.
+Return ONLY JSON.
 """
-
         response = self.client.chat.completions.create(
 
             model="gpt-4.1",
