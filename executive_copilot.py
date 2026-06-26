@@ -215,6 +215,9 @@ if uploaded_file is not None:
                 headers_json = header_agent.detect_headers(page)
 
                 st.json(headers_json)
+                st.subheader("Raw Header JSON")
+
+                st.code(headers_json)
 
                 charts = json.loads(headers_json)
 
