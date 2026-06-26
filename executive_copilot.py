@@ -4,6 +4,7 @@ import fitz
 from knowledge_repository import RepositoryManager
 from executive_agent import ExecutiveAgent
 from chart_detector import ChartDetector
+from header_agent import HeaderAgent
 
 
 # ----------------------------------------------------
@@ -193,6 +194,15 @@ if uploaded_file is not None:
             detector = ChartDetector()
 
             pages = detector.convert_pdf_to_images(uploaded_file)
+            header_agent = HeaderAgent(st.secrets["OPENAI_API_KEY"])
+
+            for page_no, page in enumerate(pages):
+
+                st.subheader(f"Page {page_no + 1}")
+
+                headers = header_agent.detect_headers(page)
+
+                st.json(headers)
 
             st.success(f"Pages detected : {len(pages)}")
             for page_index, page in enumerate(pages):
