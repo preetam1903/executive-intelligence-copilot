@@ -20,16 +20,40 @@ class HeaderAgent:
         image_b64 = self._image_to_base64(page_image)
 
         prompt = """
-You are an expert dashboard layout detector.
+You are an expert dashboard layout detection engine.
 
-Find every chart header on this page.
+Analyze this dashboard page.
+
+For every chart return:
+
+1. Header
+2. Chart Type
+3. Bounding Box [left, top, right, bottom]
+4. Confidence (0-100)
+5. Missing Structural Items
+
+Possible Missing Items:
+
+- Header
+- Legend
+- X Axis Title
+- Y Axis Title
+- Units
+- Target Line
+- Threshold
+- Data Labels
 
 Return ONLY valid JSON.
 
+Example:
+
 [
   {
-    "header":"Production vs Target",
-    "confidence":98
+    "header":"Production Volume vs Target",
+    "chart_type":"Grouped Bar",
+    "bbox":[120,180,760,540],
+    "confidence":99,
+    "missing_items":[]
   }
 ]
 
