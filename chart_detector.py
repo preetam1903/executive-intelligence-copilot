@@ -61,22 +61,29 @@ class ChartDetector:
         width = page_image.width
         height = page_image.height
 
-        # Expand the detected box
-        padding_x = 40
-        padding_y = 40
+    # Because PDF is rendered at 3x,
+    # scale the GPT coordinates.
 
-        left = max(0, left - padding_x)
-        top = max(0, top - padding_y)
+        scale = 3
 
-        right = min(width, right + padding_x)
-        bottom = min(height, bottom + padding_y)
+        left *= scale
+        right *= scale
+        top *= scale
+        bottom *= scale
+
+        padding = 40
+
+        left = max(0, left - padding)
+        top = max(0, top - padding)
+
+        right = min(width, right + padding)
+        bottom = min(height, bottom + padding)
 
         return page_image.crop(
             (
-                left,
-                top,
-                right,
-                bottom
+                int(left),
+                int(top),
+                int(right),
+                int(bottom)
             )
         )
-    

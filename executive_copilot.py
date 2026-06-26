@@ -227,6 +227,9 @@ if uploaded_file is not None:
                         page,
                         chart["bbox"]
                     )
+                    st.write("Bounding Box")
+
+                    st.write(chart["bbox"])
 
 # Crop only the plotting area
                     #plot_image = plot_detector.detect_plot_area(
@@ -236,7 +239,7 @@ if uploaded_file is not None:
 # Display both images
                     st.image(
                         chart_image,
-                        caption=chart["header"],
+                        caption=f"{chart['header']}  ({chart_image.width} x {chart_image.height})",
                         use_container_width=True
                     )
 
@@ -253,7 +256,15 @@ if uploaded_file is not None:
                         "y_axis": chart["structure"]["y_axis"]
 
                     }
+                    st.markdown("### Debug")
 
+                    st.write("Header from Chart Object")
+
+                    st.write(chart["header"])
+
+                    st.write("Layout Sent To GPT")
+
+                    st.json(layout_info)
                     analysis = analysis_agent.analyze_chart(
                         chart_image,
                         layout_info
