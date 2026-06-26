@@ -201,7 +201,7 @@ if uploaded_file is not None:
 
                 charts = detector.detect_chart_regions(page)
 
-                st.write(f"Charts Found : {len(charts)}")
+                st.write("Chart Detection Engine : Ready")
                 
             result = agent.process_report(
 

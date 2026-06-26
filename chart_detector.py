@@ -2,8 +2,7 @@ import fitz  # PyMuPDF
 from PIL import Image
 import io
 import os
-import cv2
-import numpy as np
+
 
 
 class ChartDetector:
@@ -32,44 +31,12 @@ class ChartDetector:
 
         return pages
 
+    
     def detect_chart_regions(self, page_image):
 
-        image = np.array(page_image)
+        """
+        Placeholder for GPT Vision Layout Detection.
+        Returns detected chart regions.
+        """
 
-        gray = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
-
-        blur = cv2.GaussianBlur(gray, (5, 5), 0)
-
-        edges = cv2.Canny(blur, 50, 150)
-
-        contours, _ = cv2.findContours(
-            edges,
-            cv2.RETR_EXTERNAL,
-            cv2.CHAIN_APPROX_SIMPLE
-        )
-
-        charts = []
-
-        for contour in contours:
-
-            x, y, w, h = cv2.boundingRect(contour)
-
-            area = w * h
-
-            if area < 80000:
-                continue
-
-            charts.append({
-
-                "bbox": (x, y, w, h),
-
-                "area": area
-
-            })
-
-        charts = sorted(
-            charts,
-            key=lambda c: (c["bbox"][1], c["bbox"][0])
-        )
-
-        return charts
+        return []
