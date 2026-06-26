@@ -92,74 +92,74 @@ class RepositoryUpdater:
     # ----------------------------------------------------
 
     def executive_object_exists(
-        self,
-        executive_object):
+            self,
+            executive_object):
 
-    try:
+        try:
 
-        self.repository.cursor.execute(
+            self.repository.cursor.execute(
 
-            """
-            SELECT object_id
+                """
+                SELECT object_id
 
-            FROM executive_objects
+                FROM executive_objects
 
-            WHERE lower(object_type)=?
+                WHERE lower(object_type)=?
 
-            AND lower(title)=?
-            AND lower(plant)=?
-            AND lower(unit)=?
-            AND lower(business_area)=?
-            AND lower(time_period)=?
-            """,
+                AND lower(title)=?
+                AND lower(plant)=?
+                AND lower(unit)=?
+                AND lower(business_area)=?
+                AND lower(time_period)=?
+                """,
 
-            (
+                (
 
-                self.safe_lower(
-                    executive_object.object_type
-                ),
+                    self.safe_lower(
+                        executive_object.object_type
+                    ),
 
-                self.safe_lower(
-                    executive_object.title
-                ),
+                    self.safe_lower(
+                        executive_object.title
+                    ),
 
-                self.safe_lower(
-                    executive_object.plant
-                ),
+                    self.safe_lower(
+                        executive_object.plant
+                    ),
 
-                self.safe_lower(
-                    executive_object.unit
-                ),
+                    self.safe_lower(
+                        executive_object.unit
+                    ),
 
-                self.safe_lower(
-                    executive_object.business_area
-                ),
+                    self.safe_lower(
+                        executive_object.business_area
+                    ),
 
-                self.safe_lower(
-                    executive_object.time_period
+                    self.safe_lower(
+                        executive_object.time_period
+                    )
+
                 )
 
             )
 
-        )
+            row = self.repository.cursor.fetchone()
 
-        row = self.repository.cursor.fetchone()
+            if row:
 
-        if row:
+                return True, row["object_id"]
 
-            return True, row["object_id"]
+            return False, None
 
-        return False, None
+        except Exception as ex:
 
-    except Exception as ex:
+            print("=" * 80)
+            print("EXECUTIVE OBJECT EXISTS ERROR")
+            print(type(ex))
+            print(ex)
+            print("=" * 80)
 
-        print("=" * 80)
-        print("EXECUTIVE OBJECT EXISTS ERROR")
-        print(type(ex))
-        print(ex)
-        print("=" * 80)
-
-        raise
+            raise
 
         # ----------------------------------------------------
     # Save Executive Object
