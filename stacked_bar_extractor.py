@@ -7,28 +7,35 @@ class StackedBarExtractor:
 
         img = np.array(pil_image)
 
-        h = img.shape[0]
+        height, width = img.shape[:2]
 
-        top = x_axis
+        half_width = 6          # examine 13 pixels around the center
+        min_dark_pixels = 5     # row must contain at least this many coloured pixels
 
-        found = False
+        top = None
 
         for y in range(x_axis, 0, -1):
 
-            pixel = img[y, center_x]
+            dark_count = 0
 
-            r, g, b = pixel
+            for x in range(
+                max(0, center_x - half_width),
+                min(width, center_x + half_width + 1)
+            ):
 
-            # Ignore white background
+                r, g, b = img[y, x]
 
-            if r > 235 and g > 235 and b > 235:
-                continue
+                # Ignore white / near-white background
+                if not (r > 240 and g > 240 and b > 240):
+                    dark_count += 1
 
-            top = y
+            if dark_count >= min_dark_pixels:
+                top = y
+            elif top is not None:
+                # We have left the bar
+                break
 
-            found = True
-
-        if not found:
+        if top is None:
             return 0
 
         return x_axis - top
