@@ -193,7 +193,7 @@ if uploaded_file is not None:
 
         ):
             detector = ChartDetector()
-            plot_detector = PlotDetector()
+            #plot_detector = PlotDetector()
 
             pages = detector.convert_pdf_to_images(uploaded_file)
             uploaded_file.seek(0)
