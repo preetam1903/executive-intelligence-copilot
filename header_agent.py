@@ -81,13 +81,61 @@ For each chart return:
     ]
 }
 
+"metadata":{
+
+"x_axis_type":"",
+
+"time_granularity":"",
+
+"number_of_periods":"",
+
+"number_of_series":"",
+
+"orientation":"",
+
+"chart_purpose":"",
+
+"business_area":"",
+
+"supports_trend_analysis":true,
+
+"supports_target_comparison":true,
+
+"supports_correlation":true
+
+},
+
+"analysis_capabilities":{
+
+"can_extract_values":true,
+
+"can_detect_spikes":true,
+
+"can_detect_outliers":true,
+
+"can_detect_trend":true,
+
+"can_compare_series":true,
+
+"can_forecast":true
+
+},
+
 Rules
 
-1. Extract actual values instead of saying Present.
+1. Extract every piece of structural information visible.
 
-2. If something cannot be determined confidently, leave it blank.
+2. Infer chart metadata.
 
-3. If clarification is needed, add a question inside clarification_required.
+3. Identify analysis capabilities.
+
+4. If the X-axis contains values like 202252, convert them to YearWeek format (2022-W52).
+
+5. If anything cannot be determined confidently, leave it blank.
+
+6. If clarification is required, add a learning item.
+
+7. Return ONLY valid JSON.
 
 Example
 
