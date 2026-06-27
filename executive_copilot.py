@@ -1,757 +1,200 @@
 import streamlit as st
 import fitz
 
-from knowledge_repository import RepositoryManager
-from executive_agent import ExecutiveAgent
 from chart_detector import ChartDetector
 from header_agent import HeaderAgent
-from chart_analysis_agent import ChartAnalysisAgent
-#from plot_detector import PlotDetector
-from bar_extractor import BarExtractor
-from plot_analyzer import PlotAnalyzer
-from stacked_bar_extractor import StackedBarExtractor
-from debug_visualizer import DebugVisualizer
 
-# ----------------------------------------------------
-# App Mode
-# ----------------------------------------------------
 
-DEMO_MODE = True
-# ----------------------------------------------------
-# Streamlit
-# ----------------------------------------------------
+# --------------------------------------------------
+# PAGE CONFIG
+# --------------------------------------------------
 
 st.set_page_config(
-
     page_title="Executive Intelligence Copilot",
-
     layout="wide"
-
 )
 
 st.title("Executive Intelligence Copilot")
 
 
-# ----------------------------------------------------
-# Repository
-# ----------------------------------------------------
+# --------------------------------------------------
+# API KEY
+# --------------------------------------------------
 
-if "repository" not in st.session_state:
-
-    repository = RepositoryManager()
-
-    repository.initialize_database()
-
-    st.session_state["repository"] = repository
+OPENAI_API_KEY = st.secrets["OPENAI_API_KEY"]
 
 
-# ----------------------------------------------------
-# Executive Agent
-# ----------------------------------------------------
-
-if "agent" not in st.session_state:
-
-    st.session_state["agent"] = ExecutiveAgent(
-
-        st.secrets["OPENAI_API_KEY"],
-
-        st.session_state["repository"]
-
-    )
-
-agent = st.session_state["agent"]
-
-
-# ----------------------------------------------------
-# Session
-# ----------------------------------------------------
-
-if "analysis_complete" not in st.session_state:
-
-    st.session_state["analysis_complete"] = False
-
-
-# ----------------------------------------------------
-# Upload
-# ----------------------------------------------------
+# --------------------------------------------------
+# UPLOAD PDF
+# --------------------------------------------------
 
 uploaded_file = st.file_uploader(
-
     "Upload Executive Report",
-
     type=["pdf"]
-
 )
 
 
-# ----------------------------------------------------
-# Preview
-# ----------------------------------------------------
+if uploaded_file is None:
+    st.stop()
 
-if uploaded_file is not None:
 
-    try:
+# --------------------------------------------------
+# PREVIEW PDF
+# --------------------------------------------------
 
-        pdf = fitz.open(
+try:
 
-            stream=uploaded_file.read(),
-
-            filetype="pdf"
-
-        )
-
-        st.write("PDF opened successfully")
-
-        st.write("Pages:", pdf.page_count)
-
-    except Exception as e:
-
-        st.error(str(e))
-
-        st.stop()
-
-    left, right = st.columns([3, 1])
-
-    with left:
-
-        if pdf.page_count > 0:
-
-            st.write("Page Count:", pdf.page_count)
-            st.write("Type:", type(pdf.page_count))
-
-            page_number = st.number_input(
-
-                "Page",
-
-                min_value=1,
-
-                max_value=pdf.page_count,
-
-                value=1,
-
-                step=1
-
-            )
-
-            page = pdf.load_page(int(page_number) - 1)
-
-            pix = page.get_pixmap(
-
-                matrix=fitz.Matrix(2, 2)
-
-            )
-
-            st.image(
-
-                pix.tobytes("png"),
-
-                use_container_width=True
-
-            )
-
-        else:
-
-            st.error(
-
-                "This PDF contains no pages or could not be read."
-
-            )
-
-    with right:
-
-        st.metric(
-
-            "Pages",
-
-            pdf.page_count
-
-        )
-
-        st.metric(
-
-            "Report",
-
-            uploaded_file.name
-
-        )
-
-    pdf.close()
-
-    uploaded_file.seek(0)
-
-
-# ----------------------------------------------------
-# Build Repository
-# ----------------------------------------------------
-
-if uploaded_file is not None:
-
-    if st.button(
-
-        "Build Executive Knowledge Repository",
-
-        use_container_width=True
-
-    ):
-
-        uploaded_file.seek(0)
-
-        with st.spinner(
-
-            "Analyzing report..."
-
-        ):
-            detector = ChartDetector()
-            #plot_detector = PlotDetector()
-
-            pages = detector.convert_pdf_to_images(uploaded_file)
-            uploaded_file.seek(0)
-            
-            header_agent = HeaderAgent(st.secrets["OPENAI_API_KEY"])
-            analysis_agent = ChartAnalysisAgent(
-                st.secrets["OPENAI_API_KEY"]
-            )
-            #bar_extractor = BarExtractor()
-            plot_analyzer = PlotAnalyzer()
-            stack_extractor = StackedBarExtractor()
-            visualizer = DebugVisualizer()
-
-            
-
-            
-            import json
-
-            for page_index, page in enumerate(pages):
-                if page_index > 0:
-                    break
-                debug = not DEMO_MODE
-
-                #st.subheader(f"Page {page_index + 1}")
-
-                headers_json = header_agent.detect_headers(page)
-
-                #st.json(headers_json)
-                #st.subheader("Raw Header JSON")
-
-                #st.code(headers_json)
-
-                #st.subheader("Raw Header JSON")
-
-                #st.code(headers_json)
-
-                #st.subheader("Raw Header JSON")
-
-                #st.code(headers_json)
-
-                import json
-
-                try:
-                    charts = json.loads(headers_json)
-
-                except Exception as e:
-                    st.error("Header Agent returned invalid JSON")
-
-                    st.code(headers_json)
-
-                    continue
-                    
-
-                for chart_index, chart in enumerate(charts):
-
-                    if chart_index > 0:
-                        break
-
-                    chart_image = detector.crop_chart(
-                        page,
-                        chart["bbox"]
-                    )
-                    # ----------------------------
-# DEBUG
-# ----------------------------
-
-                    #st.subheader("Chart Passed To Extractor")
-
-                    #st.image(chart_image, use_container_width=True)
-
-                    #st.write("Page Size :", page.width, "x", page.height)
-
-                    #st.write("Chart Size :", chart_image.width, "x", chart_image.height)
-
-                    #st.write("BBox :", chart["bbox"])
-                    
-                    #st.subheader("Chart Passed To Extractor")
-                    #st.image(chart_image, use_container_width=True)
-                    
-                    #st.write("Bounding Box")
-
-                    #st.write(chart["bbox"])
-
-# Crop only the plotting area
-                    #plot_image = plot_detector.detect_plot_area(
-                        #chart_image
-                    #)
-
-# Display both images
-                    st.image(
-                        chart_image,
-                        caption=chart["header"],
-                        use_container_width=True
-                    )
-
-                    layout_info = {
-
-                        "header": chart["header"],
-
-                        "chart_type": chart["chart_type"],
-
-                        "legend": chart["structure"]["legend"],
-
-                        "x_axis": chart["structure"]["x_axis"],
-
-                        "y_axis": chart["structure"]["y_axis"]
-
-                    }
-
-                    analysis = analysis_agent.analyze_chart(
-                        chart_image,
-                        layout_info
-                    )
-                    #st.markdown("### Debug")
-
-                    #st.write("Header from Chart Object")
-
-                    #st.write(chart["header"])
-
-                    #st.write("Layout Sent To GPT")
-
-                    #st.json(layout_info)
-                    #bars = bar_extractor.detect_bars(
-                        #chart_image
-                    #)
-                    plot = plot_analyzer.analyze(chart_image)
-
-                    #st.subheader("Detected Plot")
-
-                    #st.json(plot)
-                    label_count = len(layout_info["x_axis"]["labels"])
-
-                    if label_count == 0:
-
-                        st.warning(
-                            f"Skipping '{chart['header']}' because no X-axis labels were detected."
-                        )
-
-                        continue
-
-                    centers = plot_analyzer.compute_expected_bar_positions(
-                        plot,
-                        label_count
-                    )
-                    # Ignore first and last positions
-                    #centers = centers[1:-1]
-
-                    #st.subheader("Detected Bar Centers")
-
-                    #st.write(centers)
-                    #heights = []
-
-                    heights = []
-
-                    #st.subheader("Measured Bar Details")
-
-                    for center in centers:
-
-                        result = stack_extractor.measure_total_height(
-                            chart_image,
-                            center,
-                            plot["x_axis"]
-                        )
-
-                        heights.append(result["height"])
-
-                        #st.json(result)
-                    #heights = []
-
-# ----------------------------
-# Draw Debug Image
-# ----------------------------
-
-                    if page_index == 0 and chart == charts[0]:
-                        st.write("Validation block executed")
-                        st.write("Centers =", len(centers))
-                        st.write("Heights =", len(heights))
-                        debug_image = visualizer.draw_bar_boxes(
-                            chart_image,
-                            centers,
-                            heights,
-                            plot["x_axis"]
-                        )
-
-                        st.subheader("AI Vision Validation")
-
-                        st.image(
-                            debug_image,
-                            use_container_width=True
-                        )
-
-# ----------------------------
-
-                    #st.subheader("Measured Heights")
-
-                    #st.write(heights)
-
-                    #st.write("Total Bars :", len(centers))
-                    #st.write("Plot Height :", plot["height"])
-                    #st.write("X Axis :", plot["x_axis"])
-
-                    #st.subheader("AI Vision Validation")
-
-                    #st.json(bars)
-                    st.divider()
-
-                    st.subheader("Chart Analysis")
-
-                    if "analysis" in locals():
-
-                        st.json(json.loads(analysis))
-
-                    else:
-
-                        st.warning("Analysis not generated.")
-
-# ----------------------------------------------------
-# Dashboard
-# ----------------------------------------------------
-
-if st.session_state["analysis_complete"]:
-
-    st.divider()
-
-    stats = agent.current_session()
-
-    c1, c2, c3 = st.columns(3)
-
-    with c1:
-
-        st.metric(
-
-            "Report",
-
-            stats["report"]
-
-        )
-
-    with c2:
-
-        st.metric(
-
-            "Executive Objects",
-
-            stats["executive_objects"]
-
-        )
-
-    with c3:
-
-        st.metric(
-
-            "Relationships",
-
-            stats["relationships"]
-
-        )
-
-    st.divider()
-
-    repository_stats = agent.repository_statistics()
-
-    st.subheader("Knowledge Repository")
-
-    st.json(
-
-        repository_stats
-
+    pdf = fitz.open(
+        stream=uploaded_file.read(),
+        filetype="pdf"
     )
 
-# ----------------------------------------------------
-# Agent Health
-# ----------------------------------------------------
+except Exception as e:
 
-    with st.expander(
+    st.error(str(e))
+    st.stop()
 
-        "Agent Health"
 
-    ):
+left, right = st.columns([4,1])
 
-        st.json(
+with left:
 
-            agent.health_check()
+    page = pdf.load_page(0)
 
-        )
-
-# ----------------------------------------------------
-# Executive Chat
-# ----------------------------------------------------
-
-    st.divider()
-
-    st.subheader(
-
-        "Executive Copilot"
-
+    pix = page.get_pixmap(
+        matrix=fitz.Matrix(2,2)
     )
 
-    question = st.text_input(
-
-        "Ask a question",
-
-        placeholder="Example: What should I focus on?"
-
+    st.image(
+        pix.tobytes("png"),
+        width="stretch"
     )
 
-    ask = st.button(
+with right:
 
-        "Ask Executive Copilot",
-
-        use_container_width=True
-
+    st.metric(
+        "Pages",
+        pdf.page_count
     )
 
-    if ask:
+    st.metric(
+        "File",
+        uploaded_file.name
+    )
 
-        if question.strip() == "":
+pdf.close()
+uploaded_file.seek(0)
 
-            st.warning(
 
-                "Enter a question."
+# --------------------------------------------------
+# BUILD BUTTON
+# --------------------------------------------------
 
-            )
+if not st.button(
+    "Start Extraction",
+    width="stretch"
+):
+    st.stop()
 
-        else:
 
-            with st.spinner(
+# --------------------------------------------------
+# INITIALIZE
+# --------------------------------------------------
 
-                "Reasoning..."
+with st.spinner("Loading PDF..."):
 
-            ):
+    detector = ChartDetector()
 
-                result = agent.ask(
+    header_agent = HeaderAgent(
+        OPENAI_API_KEY
+    )
 
-                    question
+    pages = detector.convert_pdf_to_images(
+        uploaded_file
+    )
 
-                )
+uploaded_file.seek(0)
 
-            st.success(
 
-                "Analysis Complete"
+# --------------------------------------------------
+# FIRST PAGE ONLY
+# --------------------------------------------------
 
-            )
+page_image = pages[0]
 
-            st.markdown(
+st.divider()
 
-                result["answer"]
+st.subheader("Page 1 Loaded")
 
-            )
-                        # ============================================
-            # AI X-Ray
-            # ============================================
+st.image(
+    page_image,
+    width="stretch"
+)
 
-            st.divider()
 
-            st.subheader("🔍 AI X-Ray")
+# --------------------------------------------------
+# HEADER DETECTION
+# --------------------------------------------------
 
-            xray = agent.get_xray()
+with st.spinner("Detecting charts..."):
 
-            summary = xray["summary"]
+    headers_json = header_agent.detect_headers(
+        page_image
+    )
 
-            c1, c2, c3, c4 = st.columns(4)
 
-            with c1:
-                st.metric("Stages", summary["total_stages"])
+import json
 
-            with c2:
-                st.metric("Completed", summary["completed"])
+try:
 
-            with c3:
-                st.metric("Failed", summary["failed"])
+    charts = json.loads(headers_json)
 
-            with c4:
-                st.metric("Time (ms)", summary["total_time_ms"])
+except Exception:
 
-            st.divider()
+    st.error("Header Agent returned invalid JSON")
 
-            for i, stage in enumerate(xray["pipeline"], start=1):
+    st.code(headers_json)
 
-                icon = "🟢"
+    st.stop()
 
-                if stage["status"] == "Failed":
-                    icon = "🔴"
 
-                elif stage["status"] == "Running":
-                    icon = "🟡"
+if len(charts) == 0:
 
-                with st.expander(f"{icon} Step {i} : {stage['stage']}"):
+    st.error("No charts detected.")
 
-                    left, right = st.columns(2)
+    st.stop()
 
-                    with left:
 
-                        st.write("**Status**")
+# --------------------------------------------------
+# FIRST CHART ONLY
+# --------------------------------------------------
 
-                        st.success(stage["status"])
+chart = charts[0]
 
-                        st.write("**Duration**")
+st.divider()
 
-                        st.write(f"{stage['duration_ms']} ms")
+st.subheader("First Chart Detected")
 
-                    with right:
+st.json(chart)
 
-                        st.write("**Metrics**")
 
-                        st.json(stage["metrics"])
+# --------------------------------------------------
+# CROP CHART
+# --------------------------------------------------
 
-                    if len(stage["notes"]) > 0:
+chart_image = detector.crop_chart(
+    page_image,
+    chart["bbox"]
+)
 
-                        st.write("### Notes")
+st.divider()
 
-                        for note in stage["notes"]:
+st.subheader("Chart Crop")
 
-                            st.info(note)
+st.image(
+    chart_image,
+    width="stretch"
+)
 
-            
 
-# ----------------------------------------------------
-# Executive Objects
-# ----------------------------------------------------
-
-    with st.expander(
-
-        "Executive Objects"
-
-    ):
-
-        for obj in agent.executive_objects:
-
-            st.markdown(
-
-                f"### {obj.title}"
-
-            )
-
-            st.write(
-
-                f"Type : {obj.object_type}"
-
-            )
-
-            st.write(
-
-                f"Business Area : {obj.business_area}"
-
-            )
-
-            st.write(
-
-                f"Unit : {obj.unit}"
-
-            )
-
-            st.write(
-
-                f"Time Period : {obj.time_period}"
-
-            )
-
-            st.write(
-
-                f"Page : {obj.page}"
-
-            )
-
-            if obj.commentary:
-
-                st.write(
-
-                    "**Commentary**"
-
-                )
-
-                st.json(
-
-                    obj.commentary
-
-                )
-
-            
-            if obj.observations:
-
-                st.write(
-
-                    "**Observations**"
-
-                )
-
-                for obs in obj.observations:
-
-                    st.json(
-
-                        vars(obs)
-
-                    )
-
-    
-            st.write("RAW OBJECT")
-
-            st.json(vars(obj))
-
-
-            st.divider()
-
-# ----------------------------------------------------
-# Relationships
-# ----------------------------------------------------
-
-    with st.expander(
-
-        "Relationships"
-
-    ):
-
-        if len(agent.relationships) == 0:
-
-            st.info(
-
-                "No relationships detected."
-
-            )
-
-        else:
-
-            st.json(
-
-                agent.relationships
-
-            )
-
-# ----------------------------------------------------
-# Reset
-# ----------------------------------------------------
-
-    st.divider()
-
-    if st.button(
-
-        "Reset Session",
-
-        use_container_width=True
-
-    ):
-
-        agent.reset()
-
-        for key in list(st.session_state.keys()):
-
-            del st.session_state[key]
-
-        st.rerun()
-
+st.success("Milestone 1 Complete")
