@@ -177,7 +177,16 @@ st.divider()
 st.subheader("First Chart Detected")
 
 st.json(chart)
+st.subheader("Structure")
+
+st.json(chart["structure"])
+
+st.write("Labels :")
+
 st.write(chart["structure"]["x_axis"]["labels"])
+
+st.write("Label Count :")
+
 st.write(len(chart["structure"]["x_axis"]["labels"]))
 
 # --------------------------------------------------
