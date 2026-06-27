@@ -6,6 +6,7 @@ from header_agent import HeaderAgent
 from plot_analyzer import PlotAnalyzer
 from bar_extractor import BarExtractor
 from xaxis_agent import XAxisAgent
+from stack_value_extractor import StackValueExtractor
 
 # --------------------------------------------------
 # PAGE CONFIG
@@ -187,7 +188,24 @@ chart_image = detector.crop_chart(
     page_image,
     chart["bbox"]
 )
+metadata = {
 
+    "plot_area": {
+
+        "left": 92,
+        "right": 411,
+        "top": 6,
+        "bottom": 292
+
+    },
+
+    "bars": 27
+
+}
+
+extractor = StackValueExtractor(
+    metadata
+)
 st.divider()
 
 st.subheader("Chart Crop")
@@ -241,49 +259,21 @@ st.json(bars)
 # --------------------------------------------------
 
 
-label_count = 26
 
-centers = plot_analyzer.compute_expected_bar_positions(
-    plot,
-    label_count
+
+debug_image = extractor.draw_sampling_lines(
+    chart_image
 )
 
-# Shift all centers left by 27 pixels
-centers = [c - 27 for c in centers]
-
 st.divider()
 
-st.subheader("Expected Bar Centers")
-
-st.write("Centers")
-
-for i, c in enumerate(centers):
-
-    st.write(i, c)
-
-st.write("Total Bars :", len(centers))
-
-
-from PIL import ImageDraw
-
-debug = chart_image.copy()
-
-draw = ImageDraw.Draw(debug)
-
-for x in centers:
-
-    draw.line(
-        [(x, 0), (x, debug.height)],
-        fill=(0, 255, 0),
-        width=2
-    )
-
-st.divider()
-
-st.subheader("Center Line Validation")
+st.subheader("Sampling Lines")
 
 st.image(
-    debug,
+    debug_image,
     width="stretch"
 )
+
+
+
 st.success("Milestone 3 Complete")
