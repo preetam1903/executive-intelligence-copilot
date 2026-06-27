@@ -5,6 +5,7 @@ from chart_detector import ChartDetector
 from header_agent import HeaderAgent
 from plot_analyzer import PlotAnalyzer
 from bar_extractor import BarExtractor
+from xaxis_agent import XAxisAgent
 
 # --------------------------------------------------
 # PAGE CONFIG
@@ -109,6 +110,9 @@ with st.spinner("Loading PDF..."):
     header_agent = HeaderAgent(
         OPENAI_API_KEY
     )
+    xaxis_agent = XAxisAgent(
+        OPENAI_API_KEY
+    )
 
     pages = detector.convert_pdf_to_images(
         uploaded_file
@@ -131,7 +135,15 @@ st.image(
     page_image,
     width="stretch"
 )
+st.divider()
 
+st.subheader("X Axis Labels")
+
+xaxis = xaxis_agent.extract_labels(
+    chart_image
+)
+
+st.json(xaxis)
 
 # --------------------------------------------------
 # HEADER DETECTION
