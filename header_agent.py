@@ -76,10 +76,8 @@ For each chart return:
         }
     },
 
-    "clarification_required":[
+    "clarification_required":[],
 
-    ]
-}
 
 "metadata":{
 
