@@ -348,19 +348,19 @@ if uploaded_file is not None:
                     #st.write(centers)
                     #heights = []
 
-                    #heights = []
+                    heights = []
 
                     #st.subheader("Measured Bar Details")
 
-                    #for center in centers:
+                    for center in centers:
 
-                        #result = stack_extractor.measure_total_height(
-                            #chart_image,
-                            #center,
-                            #plot["x_axis"]
-                        #)
+                        result = stack_extractor.measure_total_height(
+                            chart_image,
+                            center,
+                            plot["x_axis"]
+                        )
 
-                        #heights.append(result["height"])
+                        heights.append(result["height"])
 
                         #st.json(result)
                     heights = []
