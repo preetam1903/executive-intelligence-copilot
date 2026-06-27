@@ -11,6 +11,12 @@ from bar_extractor import BarExtractor
 from plot_analyzer import PlotAnalyzer
 from stacked_bar_extractor import StackedBarExtractor
 from debug_visualizer import DebugVisualizer
+
+# ----------------------------------------------------
+# App Mode
+# ----------------------------------------------------
+
+DEMO_MODE = True
 # ----------------------------------------------------
 # Streamlit
 # ----------------------------------------------------
@@ -205,7 +211,7 @@ if uploaded_file is not None:
             analysis_agent = ChartAnalysisAgent(
                 st.secrets["OPENAI_API_KEY"]
             )
-            bar_extractor = BarExtractor()
+            #bar_extractor = BarExtractor()
             plot_analyzer = PlotAnalyzer()
             stack_extractor = StackedBarExtractor()
             visualizer = DebugVisualizer()
@@ -216,23 +222,24 @@ if uploaded_file is not None:
             import json
 
             for page_index, page in enumerate(pages):
+                debug = not DEMO_MODE
 
-                st.subheader(f"Page {page_index + 1}")
+                #st.subheader(f"Page {page_index + 1}")
 
                 headers_json = header_agent.detect_headers(page)
 
-                st.json(headers_json)
-                st.subheader("Raw Header JSON")
+                #st.json(headers_json)
+                #st.subheader("Raw Header JSON")
 
-                st.code(headers_json)
+                #st.code(headers_json)
 
-                st.subheader("Raw Header JSON")
+                #st.subheader("Raw Header JSON")
 
-                st.code(headers_json)
+                #st.code(headers_json)
 
-                st.subheader("Raw Header JSON")
+                #st.subheader("Raw Header JSON")
 
-                st.code(headers_json)
+                #st.code(headers_json)
 
                 import json
 
@@ -244,8 +251,8 @@ if uploaded_file is not None:
                     st.stop()
 
                 for chart in charts:
-                    st.subheader("Current Chart")
-                    st.json(chart)
+                    #st.subheader("Current Chart")
+                    #st.json(chart)
 
                     chart_image = detector.crop_chart(
                         page,
@@ -255,22 +262,22 @@ if uploaded_file is not None:
 # DEBUG
 # ----------------------------
 
-                    st.subheader("Chart Passed To Extractor")
+                    #st.subheader("Chart Passed To Extractor")
 
-                    st.image(chart_image, use_container_width=True)
+                    #st.image(chart_image, use_container_width=True)
 
-                    st.write("Page Size :", page.width, "x", page.height)
+                    #st.write("Page Size :", page.width, "x", page.height)
 
-                    st.write("Chart Size :", chart_image.width, "x", chart_image.height)
+                    #st.write("Chart Size :", chart_image.width, "x", chart_image.height)
 
-                    st.write("BBox :", chart["bbox"])
+                    #st.write("BBox :", chart["bbox"])
                     
-                    st.subheader("Chart Passed To Extractor")
-                    st.image(chart_image, use_container_width=True)
+                    #st.subheader("Chart Passed To Extractor")
+                    #st.image(chart_image, use_container_width=True)
                     
-                    st.write("Bounding Box")
+                    #st.write("Bounding Box")
 
-                    st.write(chart["bbox"])
+                    #st.write(chart["bbox"])
 
 # Crop only the plotting area
                     #plot_image = plot_detector.detect_plot_area(
@@ -280,7 +287,7 @@ if uploaded_file is not None:
 # Display both images
                     st.image(
                         chart_image,
-                        caption=f"{chart['header']}  ({chart_image.width} x {chart_image.height})",
+                        caption=chart["header"],
                         use_container_width=True
                     )
 
@@ -302,23 +309,23 @@ if uploaded_file is not None:
                         chart_image,
                         layout_info
                     )
-                    st.markdown("### Debug")
+                    #st.markdown("### Debug")
 
-                    st.write("Header from Chart Object")
+                    #st.write("Header from Chart Object")
 
-                    st.write(chart["header"])
+                    #st.write(chart["header"])
 
-                    st.write("Layout Sent To GPT")
+                    #st.write("Layout Sent To GPT")
 
-                    st.json(layout_info)
-                    bars = bar_extractor.detect_bars(
-                        chart_image
-                    )
+                    #st.json(layout_info)
+                    #bars = bar_extractor.detect_bars(
+                        #chart_image
+                    #)
                     plot = plot_analyzer.analyze(chart_image)
 
-                    st.subheader("Detected Plot")
+                    #st.subheader("Detected Plot")
 
-                    st.json(plot)
+                    #st.json(plot)
                     label_count = len(layout_info["x_axis"]["labels"])
 
                     centers = plot_analyzer.compute_expected_bar_positions(
@@ -328,55 +335,62 @@ if uploaded_file is not None:
                     # Ignore first and last positions
                     centers = centers[1:-1]
 
-                    st.subheader("Detected Bar Centers")
+                    #st.subheader("Detected Bar Centers")
 
-                    st.write(centers)
+                    #st.write(centers)
+                    #heights = []
+
+                    #heights = []
+
+                    #st.subheader("Measured Bar Details")
+
+                    #for center in centers:
+
+                        #result = stack_extractor.measure_total_height(
+                            #chart_image,
+                            #center,
+                            #plot["x_axis"]
+                        #)
+
+                        #heights.append(result["height"])
+
+                        #st.json(result)
                     heights = []
-
-                    heights = []
-
-                    st.subheader("Measured Bar Details")
-
-                    for center in centers:
-
-                        result = stack_extractor.measure_total_height(
-                            chart_image,
-                            center,
-                            plot["x_axis"]
-                        )
-
-                        heights.append(result["height"])
-
-                        st.json(result)
 
 # ----------------------------
 # Draw Debug Image
 # ----------------------------
 
-                    debug_image = visualizer.draw_bar_boxes(
-                        chart_image,
-                        centers,
-                        heights,
-                        plot["x_axis"]
-                    )
+                    if page_index == 0 and chart == charts[0]:
 
-                    st.subheader("Detected Bars")
+                        debug_image = visualizer.draw_bar_boxes(
+                            chart_image,
+                            centers,
+                            heights,
+                            plot["x_axis"]
+                        )
 
-                    st.image(debug_image, use_container_width=True)
+                        st.subheader("AI Vision Validation")
+
+                        st.image(
+                            debug_image,
+                            use_container_width=True
+                        )
 
 # ----------------------------
 
-                    st.subheader("Measured Heights")
+                    #st.subheader("Measured Heights")
 
-                    st.write(heights)
+                    #st.write(heights)
 
-                    st.write("Total Bars :", len(centers))
-                    st.write("Plot Height :", plot["height"])
-                    st.write("X Axis :", plot["x_axis"])
+                    #st.write("Total Bars :", len(centers))
+                    #st.write("Plot Height :", plot["height"])
+                    #st.write("X Axis :", plot["x_axis"])
 
-                    st.subheader("Detected Bars")
+                    #st.subheader("AI Vision Validation")
 
-                    st.json(bars)
+                    #st.json(bars)
+                    st.divider()
 
                     st.subheader("Chart Analysis")
 
