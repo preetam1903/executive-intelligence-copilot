@@ -246,6 +246,9 @@ if uploaded_file is not None:
                         page,
                         chart["bbox"]
                     )
+                    st.subheader("Chart Passed To Extractor")
+                    st.image(chart_image, use_container_width=True)
+                    
                     st.write("Bounding Box")
 
                     st.write(chart["bbox"])
