@@ -4,6 +4,7 @@ import fitz
 from chart_detector import ChartDetector
 from header_agent import HeaderAgent
 from plot_analyzer import PlotAnalyzer
+from bar_extractor import BarExtractor
 
 # --------------------------------------------------
 # PAGE CONFIG
@@ -209,5 +210,19 @@ st.divider()
 st.subheader("Detected Plot")
 st.json(plot)
 
+# --------------------------------------------------
+# BAR DETECTION
+# --------------------------------------------------
 
-st.success("Milestone 1 Complete")
+
+
+bar_extractor = BarExtractor()
+
+bars = bar_extractor.detect_bars(chart_image)
+
+st.divider()
+
+st.subheader("Detected Bars")
+
+st.json(bars)
+st.success("Milestone 3 Complete")
