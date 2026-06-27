@@ -270,7 +270,9 @@ sample = extractor.sample_bar(
     chart_image,
     centers[0]
 )
-
+classified = extractor.classify_bar(
+    sample
+)
 
 st.divider()
 
@@ -282,22 +284,15 @@ st.image(
 )
 st.divider()
 
-st.subheader("Bar 1 Sample")
+
+st.subheader("Bar 1 Classification")
 
 st.write("Center X :", centers[0])
 
-st.write("Rows Sampled :", len(sample))
-
-st.write("Pixels Per Row :", len(sample[0]))
-
-st.write("Sample Every 10 Rows")
-
-for i in range(0, len(sample), 10):
+for i in range(0, len(classified), 10):
 
     st.write(
-        f"Row {i}",
-        sample[i]
+        f"Row {i} : {classified[i]}"
     )
-
 
 st.success("Milestone 3 Complete")

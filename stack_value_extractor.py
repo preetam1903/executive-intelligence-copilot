@@ -1,5 +1,5 @@
 from PIL import Image, ImageDraw
-
+import colorsys
 
 class StackValueExtractor:
 
@@ -93,3 +93,76 @@ class StackValueExtractor:
             pixels.append(row)
 
         return pixels
+
+        # ----------------------------------------------------------
+    # RGB -> Color Name
+    # ----------------------------------------------------------
+
+    def classify_pixel(self, rgb):
+
+        r, g, b = rgb
+
+        h, s, v = colorsys.rgb_to_hsv(
+            r / 255.0,
+            g / 255.0,
+            b / 255.0
+        )
+
+        h = h * 360
+        s = s * 100
+        v = v * 100
+
+        # White / Background
+        if s < 15 and v > 90:
+            return "WHITE"
+
+        # Red
+        if h < 15 or h > 345:
+            return "RED"
+
+        # Orange
+        if 15 <= h <= 50:
+            return "ORANGE"
+
+        # Green
+        if 70 <= h <= 170:
+            return "GREEN"
+
+        # Blue
+        if 180 <= h <= 260:
+            return "BLUE"
+
+        return "OTHER"
+
+        # ----------------------------------------------------------
+    # Classify one sampled bar
+    # ----------------------------------------------------------
+
+    def classify_bar(self, sample):
+
+        results = []
+
+        for row in sample:
+
+            votes = []
+
+            for pixel in row:
+
+                votes.append(
+                    self.classify_pixel(pixel)
+                )
+
+            counts = {}
+
+            for vote in votes:
+
+                counts[vote] = counts.get(vote, 0) + 1
+
+            majority = max(
+                counts,
+                key=counts.get
+            )
+
+            results.append(majority)
+
+        return results
