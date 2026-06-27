@@ -73,13 +73,19 @@ class ChartDetector:
         top *= scale_y
         bottom *= scale_y
 
-        padding = 40
+        # Different padding for each side
+        left_padding = 20
+        top_padding = 20
+        right_padding = 10
+        bottom_padding = 80
 
-        left = max(0, left - padding)
-        top = max(0, top - padding)
+        left = max(0, left - left_padding)
+        top = max(0, top - top_padding)
 
-        right = min(width, right + padding)
-        bottom = min(height, bottom + padding)
+        right = min(width, right + right_padding)
+
+# Keep the crop tighter vertically
+        bottom = min(height, bottom - bottom_padding)
 
         return page_image.crop(
             (
