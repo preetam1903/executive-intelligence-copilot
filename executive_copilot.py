@@ -230,7 +230,11 @@ st.json(bars)
 # EXPECTED BAR CENTERS
 # --------------------------------------------------
 
-label_count = len(chart["structure"]["x_axis"]["labels"])
+st.subheader("Chart Keys")
+st.write(chart.keys())
+label_count = len(
+    chart["x_axis"]["labels"]
+)
 
 centers = plot_analyzer.compute_expected_bar_positions(
     plot,
