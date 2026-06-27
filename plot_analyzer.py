@@ -74,9 +74,11 @@ class PlotAnalyzer:
         plot["x_axis"] = x_axis
 
         return plot
+    
 
     def compute_expected_bar_positions(self, plot, number_of_labels):
-
+        if number_of_labels <= 0:
+            return []
         left = plot["left"]
         right = plot["right"]
 

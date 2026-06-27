@@ -328,6 +328,14 @@ if uploaded_file is not None:
                     #st.json(plot)
                     label_count = len(layout_info["x_axis"]["labels"])
 
+                    if label_count == 0:
+
+                        st.warning(
+                            f"Skipping '{chart['header']}' because no X-axis labels were detected."
+                        )
+
+                        continue
+
                     centers = plot_analyzer.compute_expected_bar_positions(
                         plot,
                         label_count
