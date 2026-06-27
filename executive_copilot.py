@@ -370,6 +370,7 @@ if uploaded_file is not None:
 # ----------------------------
 
                     if page_index == 0 and chart == charts[0]:
+                        st.write("Validation block executed")
 
                         debug_image = visualizer.draw_bar_boxes(
                             chart_image,
