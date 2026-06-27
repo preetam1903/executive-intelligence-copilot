@@ -225,4 +225,23 @@ st.divider()
 st.subheader("Detected Bars")
 
 st.json(bars)
+
+# --------------------------------------------------
+# EXPECTED BAR CENTERS
+# --------------------------------------------------
+
+label_count = len(chart["structure"]["x_axis"]["labels"])
+
+centers = plot_analyzer.compute_expected_bar_positions(
+    plot,
+    label_count
+)
+
+st.divider()
+
+st.subheader("Expected Bar Centers")
+
+st.write(centers)
+
+st.write("Total Bars :", len(centers))
 st.success("Milestone 3 Complete")
