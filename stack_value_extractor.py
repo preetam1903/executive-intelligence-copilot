@@ -21,6 +21,7 @@ class StackValueExtractor:
         distance = right - left
 
         spacing = distance / (total_bars - 1)
+        centers=[]
 
         for i in range(total_bars):
 
