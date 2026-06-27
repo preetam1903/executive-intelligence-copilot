@@ -9,20 +9,37 @@ class DebugVisualizer:
 
         draw = ImageDraw.Draw(output)
 
-        BAR_HALF_WIDTH = 6
-
         for center, height in zip(centers, heights):
 
-            left = center - BAR_HALF_WIDTH
-            right = center + BAR_HALF_WIDTH
+            top = int(x_axis - height)
+            bottom = int(x_axis)
 
-            top = x_axis - height
-            bottom = x_axis
+            # Draw a vertical green line
+            draw.line(
+                [
+                    (int(center), top),
+                    (int(center), bottom)
+                ],
+                fill="lime",
+                width=3
+            )
 
-            draw.rectangle(
-                [left, top, right, bottom],
-                outline="lime",
-                width=2
+            # Draw a small green dot at the top
+            draw.ellipse(
+                [
+                    (int(center) - 3, top - 3),
+                    (int(center) + 3, top + 3)
+                ],
+                fill="lime"
+            )
+
+            # Draw a small green dot at the bottom
+            draw.ellipse(
+                [
+                    (int(center) - 3, bottom - 3),
+                    (int(center) + 3, bottom + 3)
+                ],
+                fill="lime"
             )
 
         return output
