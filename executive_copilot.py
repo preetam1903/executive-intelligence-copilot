@@ -222,6 +222,8 @@ if uploaded_file is not None:
             import json
 
             for page_index, page in enumerate(pages):
+                if page_index > 0:
+                    break
                 debug = not DEMO_MODE
 
                 #st.subheader(f"Page {page_index + 1}")
@@ -250,9 +252,10 @@ if uploaded_file is not None:
                     st.error(e)
                     st.stop()
 
-                for chart in charts:
-                    #st.subheader("Current Chart")
-                    #st.json(chart)
+                for chart_index, chart in enumerate(charts):
+
+                    if chart_index > 0:
+                        break
 
                     chart_image = detector.crop_chart(
                         page,
@@ -341,7 +344,7 @@ if uploaded_file is not None:
                         label_count
                     )
                     # Ignore first and last positions
-                    centers = centers[1:-1]
+                    #centers = centers[1:-1]
 
                     #st.subheader("Detected Bar Centers")
 
@@ -363,7 +366,7 @@ if uploaded_file is not None:
                         heights.append(result["height"])
 
                         #st.json(result)
-                    heights = []
+                    #heights = []
 
 # ----------------------------
 # Draw Debug Image
@@ -371,7 +374,8 @@ if uploaded_file is not None:
 
                     if page_index == 0 and chart == charts[0]:
                         st.write("Validation block executed")
-
+                        st.write("Centers =", len(centers))
+                        st.write("Heights =", len(heights))
                         debug_image = visualizer.draw_bar_boxes(
                             chart_image,
                             centers,
