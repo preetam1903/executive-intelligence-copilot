@@ -135,15 +135,7 @@ st.image(
     page_image,
     width="stretch"
 )
-st.divider()
 
-st.subheader("X Axis Labels")
-
-xaxis = xaxis_agent.extract_labels(
-    chart_image
-)
-
-st.json(xaxis)
 
 # --------------------------------------------------
 # HEADER DETECTION
@@ -218,6 +210,16 @@ st.image(
     chart_image,
     width="stretch"
 )
+
+st.divider()
+
+st.subheader("X Axis Labels")
+
+xaxis = xaxis_agent.extract_labels(
+    chart_image
+)
+
+st.json(xaxis)
 # --------------------------------------------------
 # PLOT ANALYZER
 # --------------------------------------------------
