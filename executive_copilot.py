@@ -290,9 +290,14 @@ st.write("Rows Sampled :", len(sample))
 
 st.write("Pixels Per Row :", len(sample[0]))
 
-st.write("First 20 Rows")
+st.write("Sample Every 10 Rows")
 
-st.json(sample[:20])
+for i in range(0, len(sample), 10):
+
+    st.write(
+        f"Row {i}",
+        sample[i]
+    )
 
 
 st.success("Milestone 3 Complete")
