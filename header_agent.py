@@ -231,6 +231,9 @@ Return ONLY JSON.
         )
 
         result = response.choices[0].message.content.strip()
+        print("============== RAW GPT RESPONSE ==============")
+        print(result)
+        print("==============================================")
 
         result = result.replace("```json", "")
         result = result.replace("```", "")
