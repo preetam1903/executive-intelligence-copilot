@@ -259,4 +259,28 @@ for i, c in enumerate(centers):
     st.write(i, c)
 
 st.write("Total Bars :", len(centers))
+
+
+from PIL import ImageDraw
+
+debug = chart_image.copy()
+
+draw = ImageDraw.Draw(debug)
+
+for x in centers:
+
+    draw.line(
+        [(x, 0), (x, debug.height)],
+        fill=(0, 255, 0),
+        width=2
+    )
+
+st.divider()
+
+st.subheader("Center Line Validation")
+
+st.image(
+    debug,
+    width="stretch"
+)
 st.success("Milestone 3 Complete")
