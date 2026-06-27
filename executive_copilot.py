@@ -302,15 +302,19 @@ if uploaded_file is not None:
                     st.write(centers)
                     heights = []
 
+                    heights = []
+
                     for center in centers:
 
-                        h = stack_extractor.measure_total_height(
+                        result = stack_extractor.measure_total_height(
                             chart_image,
                             center,
                             plot["x_axis"]
                         )
 
-                        heights.append(h)
+                        heights.append(result["height"])
+
+                        st.write(result)
 
                     st.subheader("Measured Heights")
 
