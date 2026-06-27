@@ -252,7 +252,11 @@ st.divider()
 
 st.subheader("Expected Bar Centers")
 
-st.write(centers)
+st.write("Centers")
+
+for i, c in enumerate(centers):
+
+    st.write(i, c)
 
 st.write("Total Bars :", len(centers))
 st.success("Milestone 3 Complete")
