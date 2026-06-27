@@ -241,9 +241,7 @@ st.json(bars)
 # --------------------------------------------------
 
 
-label_count = len(
-    xaxis["labels"]
-)
+label_count = 26
 
 centers = plot_analyzer.compute_expected_bar_positions(
     plot,
