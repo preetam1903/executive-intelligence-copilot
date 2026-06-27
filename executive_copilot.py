@@ -177,7 +177,8 @@ st.divider()
 st.subheader("First Chart Detected")
 
 st.json(chart)
-
+st.write(chart["structure"]["x_axis"]["labels"])
+st.write(len(chart["structure"]["x_axis"]["labels"]))
 
 # --------------------------------------------------
 # CROP CHART
@@ -230,10 +231,9 @@ st.json(bars)
 # EXPECTED BAR CENTERS
 # --------------------------------------------------
 
-st.subheader("Chart Keys")
-st.write(chart.keys())
+
 label_count = len(
-    chart["x_axis"]["labels"]
+    chart["structure"]["x_axis"]["labels"]
 )
 
 centers = plot_analyzer.compute_expected_bar_positions(
