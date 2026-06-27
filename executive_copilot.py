@@ -3,7 +3,7 @@ import fitz
 
 from chart_detector import ChartDetector
 from header_agent import HeaderAgent
-
+from plot_analyzer import PlotAnalyzer
 
 # --------------------------------------------------
 # PAGE CONFIG
@@ -195,6 +195,19 @@ st.image(
     chart_image,
     width="stretch"
 )
+# --------------------------------------------------
+# PLOT ANALYZER
+# --------------------------------------------------
+
+
+
+plot_analyzer = PlotAnalyzer()
+
+plot = plot_analyzer.analyze(chart_image)
+
+st.divider()
+st.subheader("Detected Plot")
+st.json(plot)
 
 
 st.success("Milestone 1 Complete")
