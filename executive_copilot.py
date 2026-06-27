@@ -230,14 +230,17 @@ if uploaded_file is not None:
 
                 st.code(headers_json)
 
-                try:
+                st.subheader("Raw Header JSON")
 
+                st.code(headers_json)
+
+                import json
+
+                try:
                     charts = json.loads(headers_json)
 
                 except Exception as e:
-
                     st.error(e)
-
                     st.stop()
 
                 for chart in charts:
