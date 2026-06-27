@@ -47,19 +47,13 @@ class ChartAnalysisAgent:
 {
     "series":[
         {
-            "name":"Actual",
+            "name":"<Series Name>",
             "points":[
                 {
-                    "x":"2023-W01",
-                    "y":95,
-                    "confidence":97,
-                    "extraction_method":"Bar Height"
-                },
-                {
-                    "x":"2023-W02",
-                    "y":98,
+                    "x":"<X Label>",
+                    "y":123,
                     "confidence":95,
-                    "extraction_method":"Bar Height"
+                    "extraction_method":"Visual"
                 }
             ]
         }
@@ -75,6 +69,7 @@ The dashboard layout has already been analysed.
 The following information is already known.
 
 {json.dumps(layout_json, indent=2)}
+The series names MUST come from the legend supplied above. Never invent series names. Never use "Actual" or "Target" unless they appear in the legend.
 
 ------------------------------------------------
 
