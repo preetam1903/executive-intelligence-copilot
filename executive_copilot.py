@@ -248,6 +248,9 @@ centers = plot_analyzer.compute_expected_bar_positions(
     label_count
 )
 
+# Shift all centers left by 27 pixels
+centers = [c - 27 for c in centers]
+
 st.divider()
 
 st.subheader("Expected Bar Centers")
