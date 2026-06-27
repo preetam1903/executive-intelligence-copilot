@@ -64,12 +64,14 @@ class ChartDetector:
     # Because PDF is rendered at 3x,
     # scale the GPT coordinates.
 
-        scale = 3
+        scale_x = page_image.width / 1000
+        scale_y = page_image.height / 1000
 
-        left *= scale
-        right *= scale
-        top *= scale
-        bottom *= scale
+        left *= scale_x
+        right *= scale_x
+
+        top *= scale_y
+        bottom *= scale_y
 
         padding = 40
 
