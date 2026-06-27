@@ -30,110 +30,42 @@ Return ONLY valid JSON.
 
 For each chart return:
 
-{
-    "header":"",
-    "chart_type":"",
-    "bbox":[left,top,right,bottom],
-    "confidence":99,
-
-    "structure":{
-
-        "legend":[
-            {
-                "colour":"",
-                "meaning":""
-            }
-        ],
-
-        "x_axis":{
-            "title":"",
-            "labels":[]
-        },
-
-        "y_axis":{
-            "title":"",
-            "unit":"",
-            "minimum":"",
-            "maximum":"",
-            "interval":""
-        },
-
-        "target_line":{
-            "present":true,
-            "label":"",
-            "value":"",
-            "colour":""
-        },
-
-        "threshold_line":{
-            "present":false,
-            "label":"",
-            "value":""
-        },
-
-        "data_labels":{
-            "present":false
+[
+  {
+    "header": "",
+    "chart_type": "",
+    "bbox": [0, 0, 0, 0],
+    "confidence": 99,
+    "structure": {
+      "legend": [
+        {
+          "colour": "",
+          "meaning": ""
         }
-    },
-
-    "clarification_required":[],
-
-
-"metadata":{
-
-"x_axis_type":"",
-
-"time_granularity":"",
-
-"number_of_periods":"",
-
-"number_of_series":"",
-
-"orientation":"",
-
-"chart_purpose":"",
-
-"business_area":"",
-
-"supports_trend_analysis":true,
-
-"supports_target_comparison":true,
-
-"supports_correlation":true
-
-},
-
-"analysis_capabilities":{
-
-"can_extract_values":true,
-
-"can_detect_spikes":true,
-
-"can_detect_outliers":true,
-
-"can_detect_trend":true,
-
-"can_compare_series":true,
-
-"can_forecast":true
-
-},
+      ],
+      "x_axis": {
+        "title": "",
+        "labels": []
+      },
+      "y_axis": {
+        "title": "",
+        "unit": "",
+        "minimum": "",
+        "maximum": "",
+        "interval": ""
+      }
+    }
+  }
+]
 
 Rules
 
-1. Extract every piece of structural information visible.
-
-2. Infer chart metadata.
-
-3. Identify analysis capabilities.
-
-4. If the X-axis contains values like 202252, convert them to YearWeek format (2022-W52).
-
-5. If anything cannot be determined confidently, leave it blank.
-
-6. If clarification is required, add a learning item.
-
-7. Return ONLY valid JSON.
+1. Return ONLY valid JSON.
+2. Do not infer metadata.
+3. Do not infer business area.
+4. Do not generate analysis capabilities.
+5. Do not generate clarification items.
+6. Leave unknown fields blank.
 
 Example
 

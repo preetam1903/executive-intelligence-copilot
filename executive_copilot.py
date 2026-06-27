@@ -249,8 +249,12 @@ if uploaded_file is not None:
                     charts = json.loads(headers_json)
 
                 except Exception as e:
-                    st.error(e)
-                    st.stop()
+                    st.error("Header Agent returned invalid JSON")
+
+                    st.code(headers_json)
+
+                    continue
+                    
 
                 for chart_index, chart in enumerate(charts):
 
