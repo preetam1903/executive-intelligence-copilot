@@ -192,10 +192,10 @@ metadata = {
 
     "plot_area": {
 
-        "left": 92,
-        "right": 411,
-        "top": 6,
-        "bottom": 292
+        "left": 0,
+        "right": chart_image.width,
+        "top": 0,
+        "bottom": chart_image.height
 
     },
 
