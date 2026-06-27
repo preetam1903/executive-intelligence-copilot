@@ -192,10 +192,10 @@ metadata = {
 
     "plot_area": {
 
-        "left": 55,
-        "right": 405,
-        "top": 75,
-        "bottom": 310
+        "left": 68,
+        "right": 379,
+        "top": 105,
+        "bottom": 311
 
     },
 
