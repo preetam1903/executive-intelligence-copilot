@@ -26,7 +26,7 @@ class StackValueExtractor:
 
         for i in range(total_bars):
 
-            center = int(left + (i + 0.5) * bar_spacing)
+            center = round(left + (i + 0.5) * bar_spacing)
 
             centers.append(center)
 
