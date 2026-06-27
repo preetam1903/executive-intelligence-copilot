@@ -18,15 +18,13 @@ class StackValueExtractor:
 
         total_bars = self.metadata["bars"]
 
-        plot_width = right - left
+        distance = right - left
 
-        bar_spacing = plot_width / total_bars
-
-        centers = []
+        spacing = distance / (total_bars - 1)
 
         for i in range(total_bars):
 
-            center = round(left + (i + 0.5) * bar_spacing)
+            center = round(left + i * spacing)
 
             centers.append(center)
 
@@ -67,3 +65,30 @@ class StackValueExtractor:
                 )
 
         return image
+
+        # ----------------------------------------------------------
+    # Sample one bar
+    # ----------------------------------------------------------
+
+    def sample_bar(self, image, center_x):
+
+        top = self.metadata["plot_area"]["top"]
+        bottom = self.metadata["plot_area"]["bottom"]
+
+        pixels = []
+
+        for y in range(top, bottom):
+
+            row = []
+
+            for dx in [-2, -1, 0, 1, 2]:
+
+                x = center_x + dx
+
+                row.append(
+                    image.getpixel((x, y))
+                )
+
+            pixels.append(row)
+
+        return pixels

@@ -264,6 +264,13 @@ st.json(bars)
 debug_image = extractor.draw_sampling_lines(
     chart_image
 )
+centers = extractor.compute_bar_centers()
+
+sample = extractor.sample_bar(
+    chart_image,
+    centers[0]
+)
+
 
 st.divider()
 
@@ -273,7 +280,19 @@ st.image(
     debug_image,
     width="stretch"
 )
+st.divider()
 
+st.subheader("Bar 1 Sample")
+
+st.write("Center X :", centers[0])
+
+st.write("Rows Sampled :", len(sample))
+
+st.write("Pixels Per Row :", len(sample[0]))
+
+st.write("First 20 Rows")
+
+st.json(sample[:20])
 
 
 st.success("Milestone 3 Complete")
