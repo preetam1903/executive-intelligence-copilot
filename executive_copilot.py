@@ -317,6 +317,8 @@ if uploaded_file is not None:
                         plot,
                         label_count
                     )
+                    # Ignore first and last positions
+                    centers = centers[1:-1]
 
                     st.subheader("Detected Bar Centers")
 
