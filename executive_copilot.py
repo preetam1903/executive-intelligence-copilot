@@ -297,6 +297,11 @@ if uploaded_file is not None:
                         "y_axis": chart["structure"]["y_axis"]
 
                     }
+
+                    analysis = analysis_agent.analyze_chart(
+                        chart_image,
+                        layout_info
+                    )
                     st.markdown("### Debug")
 
                     st.write("Header from Chart Object")
@@ -375,7 +380,13 @@ if uploaded_file is not None:
 
                     st.subheader("Chart Analysis")
 
-                    st.json(analysis)
+                    if "analysis" in locals():
+
+                        st.json(json.loads(analysis))
+
+                    else:
+
+                        st.warning("Analysis not generated.")
 
 # ----------------------------------------------------
 # Dashboard
