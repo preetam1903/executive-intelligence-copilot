@@ -241,11 +241,27 @@ if uploaded_file is not None:
                     st.stop()
 
                 for chart in charts:
+                    st.subheader("Current Chart")
+                    st.json(chart)
 
                     chart_image = detector.crop_chart(
                         page,
                         chart["bbox"]
                     )
+                    # ----------------------------
+# DEBUG
+# ----------------------------
+
+                    st.subheader("Chart Passed To Extractor")
+
+                    st.image(chart_image, use_container_width=True)
+
+                    st.write("Page Size :", page.width, "x", page.height)
+
+                    st.write("Chart Size :", chart_image.width, "x", chart_image.height)
+
+                    st.write("BBox :", chart["bbox"])
+                    
                     st.subheader("Chart Passed To Extractor")
                     st.image(chart_image, use_container_width=True)
                     
