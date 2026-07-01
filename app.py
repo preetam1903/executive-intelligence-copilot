@@ -1,340 +1,211 @@
-
 import streamlit as st
 
-from openai import OpenAI
+from pipeline import run_pipeline
+from chart_layout_agent import ChartLayoutStudio
+import pandas as pd
 
-from streamlit_mic_recorder import mic_recorder
-
-from agents import (
-    RequirementAgent,
-    HLDAgent,
-    SolutionAgent,
-    QueryAgent,
-    InsightAgent
-)
-
-
-# =========================
-# OPENAI CLIENT
-# =========================
-
-client = OpenAI(
-    api_key=st.secrets["OPENAI_API_KEY"]
-)
-
-
-# =========================
-# PAGE CONFIG
-# =========================
+# --------------------------------------------------
+# Streamlit Page Configuration
+# --------------------------------------------------
 
 st.set_page_config(
-    page_title="AI Requirement Engineering Copilot",
+    page_title="Executive Intelligence Copilot",
+    page_icon="📊",
     layout="wide"
 )
 
-st.title("🎤 AI Requirement Engineering Copilot")
 
-st.write(
-    """
-Speak your business requirement and let AI generate:
+# --------------------------------------------------
+# Header
+# --------------------------------------------------
 
-- BRD
-- Requirements
-- HLD
-- Manufacturing Join Architecture
-- Solution Design
-- Python Query
-- Executive Summary
-"""
+st.title("📊 Executive Intelligence Copilot")
+
+st.caption(
+    "Upload a Monthly Executive Report and interact with its charts."
 )
-
-
-# =========================
-# MICROPHONE RECORDER
-# =========================
-
-audio = mic_recorder(
-    start_prompt="🎙️ Start Recording",
-    stop_prompt="⏹️ Stop Recording",
-    just_once=True,
-    use_container_width=True
-)
-
-
-# =========================
-# PROCESS AUDIO
-# =========================
-
-if audio:
-
-    audio_bytes = audio["bytes"]
-
-    st.audio(
-        audio_bytes,
-        format="audio/wav"
-    )
-
-
-    # =========================
-    # SAVE AUDIO FILE
-    # =========================
-
-    with open("recorded_audio.wav", "wb") as f:
-
-        f.write(audio_bytes)
-
-
-    # =========================
-    # SPEECH TO TEXT
-    # =========================
-
-    with open("recorded_audio.wav", "rb") as audio_file:
-
-        transcript = client.audio.transcriptions.create(
-            model="whisper-1",
-            file=audio_file
-        )
-
-    requirement_text = transcript.text
-
-    st.subheader("📝 Requirement Transcript")
-
-    st.write(requirement_text)
-
-
-    # =========================
-    # BRD GENERATION
-    # =========================
-
-    def generate_brd(requirement_text):
-
-        prompt = f"""
-Convert the spoken requirement below
-into a professional Business Requirement Document.
-
-Include:
-- business objective
-- scope
-- functional requirements
-- operational requirements
-- data requirements
-- expected outcomes
-
-Requirement:
-{requirement_text}
-"""
-
-        response = client.chat.completions.create(
-
-            model="gpt-4.1-mini",
-
-            messages=[
-
-                {
-                    "role": "system",
-                    "content":
-                    "You are an enterprise business analyst."
-                },
-
-                {
-                    "role": "user",
-                    "content": prompt
-                }
-            ],
-
-            temperature=0.2
-        )
-
-        return response.choices[0].message.content
-
-
-    # =========================
-    # GENERATE BRD
-    # =========================
-
-    brd = generate_brd(
-        requirement_text
-    )
-
-    st.subheader("📄 Generated BRD")
-
-    st.write(brd)
-
-
-    # =========================
-    # REQUIREMENT AGENT
-    # =========================
-
-    requirement_agent = RequirementAgent(client)
-
-    requirements = requirement_agent.extract_requirements(
-        brd
-    )
-
-    st.subheader("📌 Key Requirements")
-
-    st.success("✅ Key Requirements Extracted")
-
-    st.markdown("""
-- Bottleneck identification
-- Defect analytics
-- Customer delivery impact
-- Manufacturing lineage tracking
-- Operational intelligence generation
-""")
-
-
-    # =========================
-    # HLD AGENT
-    # =========================
-
-    hld_agent = HLDAgent(client)
-
-    hld = hld_agent.generate_hld(
-        requirements
-    )
-
-    st.subheader("🏗️ High Level Architecture")
-
-    st.success("✅ Architecture Generated")
-
-    st.code(
-        '''
-SQL Database
-      ↓
-AI Query Engine
-      ↓
-Operational Analytics
-      ↓
-Executive Dashboard
-''',
-        language="text"
-    )
-
-    st.markdown("### 🔗 Key Manufacturing Joins")
-
-    st.code(
-        '''
-PRODUCTION_DATA.MAT_ID
-    ↔ DEFECT_DATA.MAT_ID
-
-Purpose:
-Defect impact analysis
-
-
-PRODUCTION_DATA.ORDER_NO
-    ↔ ORDER_DATA.ORDER_NO
-
-Purpose:
-Customer delivery tracking
-
-
-MATERIAL_FLOW_DATA.MAT_ID_NEXT
-    ↔ PRODUCTION_DATA.MAT_ID
-
-Purpose:
-Parent-child lineage tracking
-
-
-PRODUCTION_DATA.ROUTE
-    ↓
-NEXT_INSTALLATION
-
-Purpose:
-Dynamic workflow derivation
-''',
-        language="text"
-    )
-
-
-    # =========================
-    # SOLUTION AGENT
-    # =========================
-
-    solution_agent = SolutionAgent(client)
-
-    solution = solution_agent.generate_solution(
-        requirements,
-        hld
-    )
-
-    st.subheader("⚙️ Solution Overview")
-
-    st.success("✅ Solution Generated")
-
-    st.markdown("""
-### Technology Stack
-- SQL Database
-- Python Pandas
-- OpenAI
-- Streamlit
-
-### AI Capabilities
-- Requirement understanding
-- Dynamic query generation
-- Operational analytics
-- Executive insights
-""")
-
-
-    # =========================
-    # QUERY AGENT
-    # =========================
-
-    query_agent = QueryAgent(client)
-
-    python_query = query_agent.generate_query(
-        requirements,
-        solution
-    )
-
-    st.subheader("🐍 Generated Python Query")
-
-    query_preview = "\n".join(
-        python_query.split("\n")[:25]
-    )
-
-    st.code(
-        query_preview,
-        language="python"
-    )
-
-
-    # =========================
-    # EXECUTIVE SUMMARY
-    # =========================
-
-    insight_agent = InsightAgent(client)
-
-    summary = insight_agent.generate_summary(
-        requirements,
-        hld,
-        solution
-    )
-
-    st.subheader("📊 Executive Summary")
-
-    st.success("""
-AI-powered manufacturing intelligence platform capable of:
-
-- identifying bottlenecks
-- analyzing defects
-- tracking customer impact
-- generating operational insights
-- dynamically generating analytics queries
-
-The platform combines SQL analytics with AI orchestration
-to improve operational visibility and decision-making.
-""")
-
-
-# =========================
-# FOOTER
-# =========================
 
 st.divider()
 
-st.caption(
-    "Enterprise Voice-enabled Agentic AI Requirement Engineering Platform"
+
+# --------------------------------------------------
+# PDF Upload
+# --------------------------------------------------
+
+uploaded_pdf = st.file_uploader(
+    "Upload Executive PDF Report",
+    type=["pdf"]
 )
 
+
+# --------------------------------------------------
+# Run Pipeline
+# --------------------------------------------------
+
+if uploaded_pdf is not None:
+
+    st.success("PDF uploaded successfully.")
+
+    with st.spinner("Processing report..."):
+
+        result = run_pipeline(uploaded_pdf)
+
+    
+    st.divider()
+
+# ======================================================
+# Report Summary
+# ======================================================
+
+    st.subheader("📄 Report Summary")
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.metric(
+            "Total Pages",
+            result["pages"]["total_pages"]
+        )
+
+    with col2:
+        st.metric(
+            "Executive Charts",
+            result["repository"]["total_charts"]
+        )
+
+    st.divider()
+
+
+
+    st.subheader("🤖 Executive AI Analysis Summary")
+
+    rows = []
+
+    for chart in result["repository"]["charts"]:
+
+        rows.append({
+
+            "Chart": chart["chart_id"],
+
+            "Chart Type": chart["chart_type"],
+
+            "Title": "✅",
+
+            "X Axis": "✅",
+
+            "Left Y": "✅",
+
+            "Right Y": "—",
+
+            "Legend": "✅",
+
+            "Summary": "✅",
+
+            "Missing": "None",
+
+            "AI Confidence": f"{chart['confidence']*100:.0f}%"
+
+        })
+
+    summary_df = pd.DataFrame(rows)
+
+    # --------------------------------------------------
+# Chart Selection
+# --------------------------------------------------
+
+    chart_options = {
+        f"{chart['chart_id']} - {chart['chart_title']}": chart
+        for chart in result["repository"]["charts"]
+    }
+
+    selected_chart_name = st.selectbox(
+        "Select Chart for Detailed Analysis",
+        list(chart_options.keys())
+    )
+
+    selected_chart = chart_options[selected_chart_name]
+
+    st.dataframe(
+        summary_df,
+        use_container_width=True,
+        hide_index=True
+    )
+
+    
+# ======================================================
+# Selected Chart
+# ======================================================
+
+    st.subheader("📈 Selected Chart")
+
+    # Show image if available
+    if "image" in selected_chart:
+
+        st.image(
+            selected_chart["image"],
+            use_container_width=True
+        )
+
+    col1, col2 = st.columns([1, 2])
+
+    with col1:
+
+        st.metric("Chart ID", selected_chart["chart_id"])
+        st.metric("Page", selected_chart["page_number"])
+        st.metric("Type", selected_chart["chart_type"])
+
+    with col2:
+
+        st.write(f"**Title** : {selected_chart['chart_title']}")
+        st.write(f"**Business Area** : {selected_chart['business_area']}")
+        st.write(f"**Metric** : {selected_chart['metric']}")
+        st.write(f"**Summary** : {selected_chart['summary']}")
+        st.write(f"**Confidence** : {selected_chart['confidence']:.2f}")
+        layout_studio = ChartLayoutStudio()
+    
+        layout = layout_studio.show(selected_chart)
+        from chart_crop_agent import ChartCropAgent
+
+        if layout["preview"]:
+
+            crop_agent = ChartCropAgent()
+
+            preview = crop_agent.preview_crop(
+                selected_chart["image"],
+                layout
+            )
+
+            st.divider()
+
+            st.subheader("Crop Preview")
+
+            st.image(
+                preview,
+                use_container_width=True
+            )
+
+            st.divider()
+
+        st.subheader("🤖 Ask Executive")
+
+        question = st.text_input(
+            "Ask a question",
+            placeholder="Example: Explain this chart"
+        )
+
+        if st.button("Ask Executive"):
+
+            from executive_qa_agent import ExecutiveQAAgent
+
+            qa_agent = ExecutiveQAAgent()
+
+            answer = qa_agent.process(
+                result["repository"],
+                question
+            )
+
+            st.success(answer["answer"])
+
+        st.write(layout)
+
+  
